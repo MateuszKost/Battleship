@@ -1,6 +1,6 @@
 ﻿using CommonObjects;
 
-namespace Entities
+namespace MainObjects
 {
     /*
      * Ship - class for storing information about ship
