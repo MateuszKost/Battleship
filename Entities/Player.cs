@@ -1,5 +1,4 @@
 ﻿using CommonObjects;
-using System;
 
 namespace MainObjects
 {
@@ -20,7 +19,6 @@ namespace MainObjects
         public List<Ship> Ships { get; set; }
         public Point[] OwnMap { get; set; }
         public Point[] EnemyMap { get; set; }
-
 
         private Player(string nickName, List<Ship> ships, Point[] ownMap, Point[] enemyMap)
         {

@@ -1,8 +1,4 @@
 ﻿// See https://aka.ms/new-console-template for more information
-using MainObjects;
+using Battleship;
 
-Console.WriteLine("Hello, World!");
-
-Player playerOne = Player.CreatePlayer("Pierwszy gracz");
-
-Console.WriteLine(playerOne.NickName);
+Game.Start();
