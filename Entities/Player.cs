@@ -39,7 +39,6 @@ namespace MainObjects
 
             CreateShips(new List<Ship>(), ownMap, out List<Ship> ships, out ownMap);
 
-
             return new Player(nickName, ships, ownMap, enemyMap);
         }
 
@@ -61,10 +60,11 @@ namespace MainObjects
 
         private static void CreateShips(List<Ship> ships, Point[] ownMap, out List<Ship> shipsFilled, out Point[] actualizedMap)
         {
-            foreach (var shipType in Enum.GetValues(typeof(ShipType)).Cast<ShipType>())
+            foreach (var shipName in Enum.GetNames(typeof(ShipType)))
             {
+                ShipType shipType = (ShipType)Enum.Parse(typeof(ShipType), shipName);
                 ICollection<Point> shipPoints = CreateShipPoints(ownMap, (int)shipType);
-                Ship ship = Ship.CreateShip(shipType.ToString(), shipType, shipPoints.ToList());
+                Ship ship = Ship.CreateShip(shipName, (int)shipType, shipPoints.ToList());
 
                 ships.Add(ship);
                 ownMap = ActualizeMap(ownMap, shipPoints);
@@ -123,18 +123,21 @@ namespace MainObjects
             ICollection<Point>? points = new List<Point>();
             IndexType indexType;
             bool breakLoop = false;
+            int shipLengthCopy = shipLength;
 
             points.Add(startPoint);
-            shipLength--;
+            shipLengthCopy--;
 
             if (horrizontallyOrVertically == 0) // horrizontally 
             {
                 minimalIndex = maximalIndex = Array.IndexOf(CommonVariables.DefaultXAxis, startPoint.X);
-                indexes = new List<int>();
-                indexes.Add(minimalIndex);
+                indexes = new List<int>
+                {
+                    minimalIndex
+                };
                 indexType = CheckIndex(indexes);
 
-                while (shipLength > 0)
+                while (shipLengthCopy > 0)
                 {
                     switch (indexType)
                     {
@@ -205,18 +208,20 @@ namespace MainObjects
                         points.Add(Point.CreatePoint(CommonObjects.CommonVariables.DefaultXAxis[index], startPoint.Y, PointStatus.Taken));
                     }
 
-                    shipLength--;
+                    shipLengthCopy--;
                 }
                 return points;
             }
             else // vertically
             {
                 minimalIndex = maximalIndex = Array.IndexOf(CommonVariables.DefaultXAxis, startPoint.X);
-                indexes = new List<int>();
-                indexes.Add(minimalIndex);
+                indexes = new List<int>
+                {
+                    minimalIndex
+                };
                 indexType = CheckIndex(indexes);
 
-                while (shipLength > 0)
+                while (shipLengthCopy > 0)
                 {
                     switch (indexType)
                     {
@@ -287,7 +292,7 @@ namespace MainObjects
                         points.Add(Point.CreatePoint(CommonObjects.CommonVariables.DefaultXAxis[index], startPoint.Y, PointStatus.Taken));
                     }
 
-                    shipLength--;
+                    shipLengthCopy--;
                 }
                 return points;
             }

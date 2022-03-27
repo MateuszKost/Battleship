@@ -4,3 +4,5 @@ using MainObjects;
 Console.WriteLine("Hello, World!");
 
 Player playerOne = Player.CreatePlayer("Pierwszy gracz");
+
+Console.WriteLine(playerOne.NickName);

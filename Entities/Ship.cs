@@ -11,30 +11,27 @@ namespace MainObjects
      */
     public class Ship
     {
-        private ShipType ShipType;
-        private int ShipSize;
-
         public string ShipName { get; private set; }
+        public int ShipSize { get; private set; }
         public bool IsSunk { get; set; } = false;
         public List<Point> Points { get; private set; }
 
-        private Ship(string shipName, ShipType shipType, int shipSize, List<Point> points)
+        private Ship(string shipName, int shipSize, List<Point> points)
         {
             ShipName = shipName;
-            ShipType = shipType;
             ShipSize = shipSize;
             Points = points;
         }
 
-        internal static Ship CreateShip(string shipName, ShipType shipType, List<Point>? points = null)
+        internal static Ship CreateShip(string shipName, int shipSize, List<Point>? points = null)
         {
-            if(points == null)
+            if (points == null)
             {
                 //throw exeption
                 points = new List<Point>();
             }
 
-            return new Ship(shipName, shipType, (int)shipType, points);
+            return new Ship(shipName, shipSize, points);
         }
     }
 }
