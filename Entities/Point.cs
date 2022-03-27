@@ -15,16 +15,16 @@ namespace MainObjects
         public char Y { get; private set; }
         public PointStatus Status { get; set; }
 
-        private Point(int x, char y)
+        private Point(int x, char y, PointStatus pointStatus)
         {
             X = x;
             Y = y;
-            Status = PointStatus.Free;
+            Status = pointStatus;
         }
 
-        public static Point CreatePoint(int x, char y)
+        public static Point CreatePoint(int x, char y, PointStatus pointStatus = PointStatus.Free)
         {
-            return new Point(x, y);
+            return new Point(x, y, pointStatus);
         }
     }
 }

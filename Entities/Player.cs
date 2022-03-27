@@ -13,6 +13,9 @@ namespace MainObjects
      */
     public class Player
     {
+        private static readonly Random _random = new Random();
+        private static bool _guard = false;
+
         public string NickName { get; set; }
         public List<Ship> Ships { get; set; }
         public Point[] OwnMap { get; set; }
@@ -27,17 +30,17 @@ namespace MainObjects
             EnemyMap = enemyMap;
         }
 
-        public static Player CreatePlayer(string nickName, List<Ship>? ships = null, int mapSize = CommonObjects.CommonVariables.DefaultMapSize)
+        public static Player CreatePlayer(string nickName, int mapSize = CommonObjects.CommonVariables.DefaultMapSize)
         {
             Point[] ownMap = new Point[mapSize];
             Point[] enemyMap = new Point[mapSize];
 
             FillMaps(ownMap, enemyMap, out ownMap, out enemyMap);
 
-            if(ships == null)
-            {
-                ships = CreateShips(new List<Ship>(), ownMap);
-            }
+            List<Ship> ships = new List<Ship>();
+
+            CreateShips(new List<Ship>(), ownMap, out ships, out ownMap);
+
 
             return new Player(nickName, ships, ownMap, enemyMap);
         }
@@ -45,9 +48,9 @@ namespace MainObjects
         private static void FillMaps(Point[] ownMap, Point[] enemyMap, out Point[] filledOwnMap, out Point[] filledEnemyMap)
         {
             int index = 0;
-            foreach(char y in CommonVariables.DefaultYAxis)
+            foreach (char y in CommonVariables.DefaultYAxis)
             {
-                foreach(int x in CommonVariables.DefaultXAxis)
+                foreach (int x in CommonVariables.DefaultXAxis)
                 {
                     ownMap[index] = Point.CreatePoint(x, y);
                     enemyMap[index] = Point.CreatePoint(x, y);
@@ -58,44 +61,265 @@ namespace MainObjects
             filledEnemyMap = enemyMap;
         }
 
-        private static List<Ship> CreateShips(List<Ship> ships, Point[] ownMap)
+        private static void CreateShips(List<Ship> ships, Point[] ownMap, out List<Ship> shipsFilled, out Point[] actualizedMap)
         {
-            foreach(var shipType in Enum.GetValues(typeof(ShipType)).Cast<ShipType>())
+            foreach (var shipType in Enum.GetValues(typeof(ShipType)).Cast<ShipType>())
             {
-                List<Point> shipPoints = CreateShipPoints(ownMap, (int)shipType);
-                Ship ship = Ship.CreateShip(shipType.ToString(), shipType, shipPoints);
+                ICollection<Point> shipPoints = CreateShipPoints(ownMap, (int)shipType);
+                Ship ship = Ship.CreateShip(shipType.ToString(), shipType, shipPoints.ToList());
 
                 ships.Add(ship);
+                ownMap = ActualizeMap(ownMap, shipPoints);
             }
-
-
-            return ships;
+            actualizedMap = ownMap;
+            shipsFilled = ships;
         }
 
-        private static List<Point> CreateShipPoints(Point[] ownMap, int shipLength)
+        private static ICollection<Point> CreateShipPoints(Point[] ownMap, int shipLength)
         {
+            ICollection<Point>? shipPoints;
             CreateRandomPoint(out int xIndex, out int yIndex);
 
             int x = CommonVariables.DefaultXAxis[xIndex];
             char y = CommonVariables.DefaultYAxis[yIndex];
 
-            if(ownMap.Single(p => p.X == x && p.Y == y).Status == PointStatus.Free)
-            {
+            Point startPoint = Point.CreatePoint(x, y, PointStatus.Taken);
 
+            if (ownMap.Single(p => p.X == startPoint.X && p.Y == startPoint.Y).Status == PointStatus.Free)
+            {
+                shipPoints = FindOtherPoints(startPoint, shipLength, ownMap);
+                if (shipPoints == null)
+                {
+                    shipPoints = CreateShipPoints(ownMap, shipLength);
+                }
             }
             else
             {
-
+                shipPoints = CreateShipPoints(ownMap, shipLength);
             }
 
-            return new List<Point>();
+            return shipPoints;
         }
 
         private static void CreateRandomPoint(out int xIndex, out int yIndex, int firstIndex = CommonVariables.FirstIndexOfX_Y_Axis, int lastIndex = CommonVariables.LastIndexOfX_Y_Axis)
         {
-            Random random = new Random();
-            xIndex = random.Next(firstIndex, lastIndex);
-            yIndex = random.Next(firstIndex, lastIndex);
+            xIndex = _random.Next(firstIndex, lastIndex);
+            yIndex = _random.Next(firstIndex, lastIndex);
+        }
+
+        private static ICollection<Point>? FindOtherPoints(Point startPoint, int shipLength, Point[] ownMap, int? hOv = null)
+        {
+            int horrizontallyOrVertically;
+            if (hOv == null)
+            {
+                horrizontallyOrVertically = _random.Next(0, 1);
+            }
+            else
+            {
+                horrizontallyOrVertically = hOv.Value;
+            }
+
+            int minimalIndex, maximalIndex, index = 0;
+            ICollection<int> indexes;
+            ICollection<Point> points = new List<Point>();
+            IndexType indexType;
+            bool breakLoop = false;
+
+            points.Add(startPoint);
+            shipLength--;
+
+            if (horrizontallyOrVertically == 0) // horrizontally 
+            {
+                minimalIndex = maximalIndex = Array.IndexOf(CommonVariables.DefaultXAxis, startPoint.X);
+                indexes = new List<int>();
+                indexes.Add(minimalIndex);
+                indexType = CheckIndex(indexes);
+
+                while (shipLength > 0)
+                {
+                    switch (indexType)
+                    {
+                        case IndexType.Lower:
+                            index = minimalIndex--;
+                            breakLoop = CheckStatus(CommonVariables.DefaultXAxis[minimalIndex], startPoint.Y, ownMap);
+                            break;
+                        case IndexType.Higher:
+                            index = maximalIndex++;
+                            breakLoop = CheckStatus(CommonVariables.DefaultXAxis[maximalIndex], startPoint.Y, ownMap);
+                            break;
+                        case IndexType.Default:
+                            int prev_next = _random.Next(0, 1);
+                            if (prev_next == 0)
+                            {
+                                index = minimalIndex--;
+                                breakLoop = CheckStatus(CommonVariables.DefaultXAxis[minimalIndex], startPoint.Y, ownMap);
+                                if (breakLoop)
+                                {
+                                    index = maximalIndex++;
+                                    indexType = IndexType.Higher;
+                                    breakLoop = CheckStatus(CommonVariables.DefaultXAxis[maximalIndex], startPoint.Y, ownMap);
+                                }
+
+                                indexes.Add(index);
+                            }
+                            else if (prev_next == 1)
+                            {
+                                index = maximalIndex++;
+                                breakLoop = CheckStatus(CommonVariables.DefaultXAxis[maximalIndex], startPoint.Y, ownMap);
+                                if (breakLoop)
+                                {
+                                    index = minimalIndex--;
+                                    indexType = IndexType.Lower;
+                                    breakLoop = CheckStatus(CommonVariables.DefaultXAxis[minimalIndex], startPoint.Y, ownMap);
+                                }
+                                indexes.Add(index);
+                            }
+
+                            if (indexType == IndexType.Default)
+                            {
+                                indexType = CheckIndex(indexes);
+                            }
+                            break;
+                    }
+
+                    if (breakLoop)
+                    {
+                        if (_guard == true)
+                        {
+                            points = null;
+                        }
+                        else
+                        {
+                            _guard = true;
+                            points = FindOtherPoints(startPoint, shipLength, ownMap, 1);
+                        }
+                        break;
+                    }
+                    else
+                    {
+                        points.Add(Point.CreatePoint(CommonObjects.CommonVariables.DefaultXAxis[index], startPoint.Y, PointStatus.Taken));
+                    }
+
+                    shipLength--;
+                }
+                return points;
+            }
+            else
+            {
+                minimalIndex = maximalIndex = Array.IndexOf(CommonVariables.DefaultXAxis, startPoint.X);
+                indexes = new List<int>();
+                indexes.Add(minimalIndex);
+                indexType = CheckIndex(indexes);
+
+                while (shipLength > 0)
+                {
+                    switch (indexType)
+                    {
+                        case IndexType.Lower:
+                            index = minimalIndex--;
+                            breakLoop = CheckStatus(startPoint.X, CommonVariables.DefaultYAxis[minimalIndex], ownMap);
+                            break;
+                        case IndexType.Higher:
+                            index = maximalIndex++;
+                            breakLoop = CheckStatus(startPoint.X, CommonVariables.DefaultYAxis[maximalIndex], ownMap);
+                            break;
+                        case IndexType.Default:
+                            int prev_next = _random.Next(0, 1);
+                            if (prev_next == 0)
+                            {
+                                index = minimalIndex--;
+                                breakLoop = CheckStatus(startPoint.X, CommonVariables.DefaultYAxis[minimalIndex], ownMap);
+                                if (breakLoop)
+                                {
+                                    index = maximalIndex++;
+                                    indexType = IndexType.Higher;
+                                    breakLoop = CheckStatus(startPoint.X, CommonVariables.DefaultYAxis[maximalIndex], ownMap);
+                                }
+
+                                indexes.Add(index);
+                            }
+                            else if (prev_next == 1)
+                            {
+                                index = maximalIndex++;
+                                breakLoop = CheckStatus(startPoint.X, CommonVariables.DefaultYAxis[minimalIndex], ownMap);
+                                if (breakLoop)
+                                {
+                                    index = minimalIndex--;
+                                    indexType = IndexType.Lower;
+                                    breakLoop = CheckStatus(startPoint.X, CommonVariables.DefaultYAxis[maximalIndex], ownMap);
+                                }
+                                indexes.Add(index);
+                            }
+
+                            if (indexType == IndexType.Default)
+                            {
+                                indexType = CheckIndex(indexes);
+                            }
+                            break;
+                    }
+
+                    if (breakLoop)
+                    {
+                        if (_guard == true)
+                        {
+                            points = null;
+                        }
+                        else
+                        {
+                            _guard = true;
+                            points = FindOtherPoints(startPoint, shipLength, ownMap, 0);
+                        }
+                        break;
+                    }
+                    else
+                    {
+                        points.Add(Point.CreatePoint(CommonObjects.CommonVariables.DefaultXAxis[index], startPoint.Y, PointStatus.Taken));
+                    }
+
+                    shipLength--;
+                }
+                return points;
+            }
+        }
+
+        private static bool CheckStatus(int x, char y, Point[] ownMap)
+        {
+            if (ownMap.Single(p => p.X == x && p.Y == y).Status == PointStatus.Free)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        private static IndexType CheckIndex(IEnumerable<int> indexes)
+        {
+            IndexType indexType = IndexType.Default;
+            for (int i = 0; i < indexes.Count(); i++)
+            {
+                int element = indexes.ElementAt(i);
+                if (element == CommonVariables.FirstIndexOfX_Y_Axis)
+                {
+                    return IndexType.Higher;
+                }
+                else if (element == CommonVariables.LastIndexOfX_Y_Axis)
+                {
+                    return IndexType.Lower;
+                }
+            }
+            return indexType;
+        }
+
+        private static Point[] ActualizeMap(Point[] ownMap, IEnumerable<Point> shipPoints)
+        {
+            foreach (Point point in shipPoints)
+            {
+                ownMap[point.X].Status = PointStatus.Taken;
+            }
+
+            return ownMap;
         }
     }
 }
