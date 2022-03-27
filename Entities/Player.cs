@@ -37,9 +37,7 @@ namespace MainObjects
 
             FillMaps(ownMap, enemyMap, out ownMap, out enemyMap);
 
-            List<Ship> ships = new List<Ship>();
-
-            CreateShips(new List<Ship>(), ownMap, out ships, out ownMap);
+            CreateShips(new List<Ship>(), ownMap, out List<Ship> ships, out ownMap);
 
 
             return new Player(nickName, ships, ownMap, enemyMap);
@@ -90,6 +88,7 @@ namespace MainObjects
                 shipPoints = FindOtherPoints(startPoint, shipLength, ownMap);
                 if (shipPoints == null)
                 {
+                    _guard = false;
                     shipPoints = CreateShipPoints(ownMap, shipLength);
                 }
             }
@@ -121,7 +120,7 @@ namespace MainObjects
 
             int minimalIndex, maximalIndex, index = 0;
             ICollection<int> indexes;
-            ICollection<Point> points = new List<Point>();
+            ICollection<Point>? points = new List<Point>();
             IndexType indexType;
             bool breakLoop = false;
 
@@ -140,22 +139,26 @@ namespace MainObjects
                     switch (indexType)
                     {
                         case IndexType.Lower:
-                            index = minimalIndex--;
+                            minimalIndex--;
+                            index = minimalIndex;
                             breakLoop = CheckStatus(CommonVariables.DefaultXAxis[minimalIndex], startPoint.Y, ownMap);
                             break;
                         case IndexType.Higher:
-                            index = maximalIndex++;
+                            maximalIndex++;
+                            index = maximalIndex;
                             breakLoop = CheckStatus(CommonVariables.DefaultXAxis[maximalIndex], startPoint.Y, ownMap);
                             break;
                         case IndexType.Default:
                             int prev_next = _random.Next(0, 1);
                             if (prev_next == 0)
                             {
-                                index = minimalIndex--;
+                                minimalIndex--;
+                                index = minimalIndex;
                                 breakLoop = CheckStatus(CommonVariables.DefaultXAxis[minimalIndex], startPoint.Y, ownMap);
                                 if (breakLoop)
                                 {
-                                    index = maximalIndex++;
+                                    maximalIndex++;
+                                    index = maximalIndex;
                                     indexType = IndexType.Higher;
                                     breakLoop = CheckStatus(CommonVariables.DefaultXAxis[maximalIndex], startPoint.Y, ownMap);
                                 }
@@ -164,11 +167,13 @@ namespace MainObjects
                             }
                             else if (prev_next == 1)
                             {
-                                index = maximalIndex++;
+                                maximalIndex++;
+                                index = maximalIndex;
                                 breakLoop = CheckStatus(CommonVariables.DefaultXAxis[maximalIndex], startPoint.Y, ownMap);
                                 if (breakLoop)
                                 {
-                                    index = minimalIndex--;
+                                    minimalIndex--;
+                                    index = minimalIndex;
                                     indexType = IndexType.Lower;
                                     breakLoop = CheckStatus(CommonVariables.DefaultXAxis[minimalIndex], startPoint.Y, ownMap);
                                 }
@@ -204,7 +209,7 @@ namespace MainObjects
                 }
                 return points;
             }
-            else
+            else // vertically
             {
                 minimalIndex = maximalIndex = Array.IndexOf(CommonVariables.DefaultXAxis, startPoint.X);
                 indexes = new List<int>();
@@ -216,22 +221,26 @@ namespace MainObjects
                     switch (indexType)
                     {
                         case IndexType.Lower:
-                            index = minimalIndex--;
+                            minimalIndex--;
+                            index = minimalIndex;
                             breakLoop = CheckStatus(startPoint.X, CommonVariables.DefaultYAxis[minimalIndex], ownMap);
                             break;
                         case IndexType.Higher:
-                            index = maximalIndex++;
+                            maximalIndex++;
+                            index = maximalIndex;
                             breakLoop = CheckStatus(startPoint.X, CommonVariables.DefaultYAxis[maximalIndex], ownMap);
                             break;
                         case IndexType.Default:
                             int prev_next = _random.Next(0, 1);
                             if (prev_next == 0)
                             {
-                                index = minimalIndex--;
+                                minimalIndex--;
+                                index = minimalIndex;
                                 breakLoop = CheckStatus(startPoint.X, CommonVariables.DefaultYAxis[minimalIndex], ownMap);
                                 if (breakLoop)
                                 {
-                                    index = maximalIndex++;
+                                    maximalIndex++;
+                                    index = maximalIndex;
                                     indexType = IndexType.Higher;
                                     breakLoop = CheckStatus(startPoint.X, CommonVariables.DefaultYAxis[maximalIndex], ownMap);
                                 }
@@ -240,11 +249,13 @@ namespace MainObjects
                             }
                             else if (prev_next == 1)
                             {
-                                index = maximalIndex++;
+                                maximalIndex++;
+                                index = maximalIndex;
                                 breakLoop = CheckStatus(startPoint.X, CommonVariables.DefaultYAxis[minimalIndex], ownMap);
                                 if (breakLoop)
                                 {
-                                    index = minimalIndex--;
+                                    minimalIndex--;
+                                    index = minimalIndex;
                                     indexType = IndexType.Lower;
                                     breakLoop = CheckStatus(startPoint.X, CommonVariables.DefaultYAxis[maximalIndex], ownMap);
                                 }
@@ -316,7 +327,7 @@ namespace MainObjects
         {
             foreach (Point point in shipPoints)
             {
-                ownMap[point.X].Status = PointStatus.Taken;
+                ownMap.Single(p => p.X == point.X && p.Y == point.Y).Status = PointStatus.Taken;
             }
 
             return ownMap;
