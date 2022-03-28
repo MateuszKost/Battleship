@@ -17,6 +17,7 @@ namespace MainObjects
 
         public string NickName { get; init; }
         public List<Ship> Ships { get; init; }
+        public bool HittedButNotSunk { get; set; }
         public Point[] OwnMap { get; set; }
         public Point[] EnemyMap { get; set; }
 
@@ -26,6 +27,7 @@ namespace MainObjects
             Ships = ships;
             OwnMap = ownMap;
             EnemyMap = enemyMap;
+            HittedButNotSunk = false;
         }
 
         public static Player CreatePlayer(string nickName, int mapSize = CommonVariables.DefaultMapSize)
@@ -38,6 +40,58 @@ namespace MainObjects
             CreateShips(new List<Ship>(), ownMap, out List<Ship> ships, out ownMap);
 
             return new Player(nickName, ships, ownMap, enemyMap);
+        }
+
+        public PointStatus Shot(Point point, IEnumerable<Ship> ships)
+        {
+            Console.WriteLine("Oddano strzał w {0}{1}", point.X, point.Y);
+            bool hitted = ships.SelectMany(s => s.Points).SingleOrDefault(p => p.X == point.X && p.Y == point.Y) != null;
+            if (hitted)
+            {
+                Console.WriteLine("Trafiono");
+                return PointStatus.Hitted;
+            }
+            else
+            {
+                Console.WriteLine("Pudlo");
+                return PointStatus.Missed;
+            }
+        }
+
+        public void UpdateEnemyMap(Point point, PointStatus pointStatus)
+        {
+            point = EnemyMap.Single(p => p.X == point.X && p.Y == point.Y);
+            int index = Array.IndexOf(EnemyMap, point);
+            EnemyMap[index].Status = pointStatus;
+        }
+
+        public PointStatus UpdateOwnMap(Point point)
+        {
+            point = EnemyMap.Single(p => p.X == point.X && p.Y == point.Y);
+            int index = Array.IndexOf(EnemyMap, point);
+            OwnMap[index].Status = PointStatus.Hitted;
+
+            foreach(Ship ship in Ships)
+            {
+                if(ship.Points.SingleOrDefault(p => p.X == point.X && p.Y == point.Y) != null)
+                {
+                    ship.Points.Remove(point);
+                    HittedButNotSunk = true;
+                    if (ship.Points.Count == 0)
+                    {
+                        Console.WriteLine("{0} gracza {1} został zatopiony", ship.ShipName, NickName);
+                        HittedButNotSunk = false;
+                        Ships.Remove(ship);
+
+                        if(Ships.Count == 0)
+                        {
+                            Console.WriteLine("Gracza {0} przegrał gre", NickName);
+                        }
+                        return PointStatus.Sunk;
+                    }
+                }
+            }
+            return PointStatus.Hitted;
         }
 
         #region private functions
@@ -228,19 +282,21 @@ namespace MainObjects
 
         private static void Increment(int index, Point[] ownMap, out int indexIncremented, out bool breakLoop, int? x = null, char? y = null)
         {
-            indexIncremented = index++;
+            index++;
+            indexIncremented = index;
             breakLoop = CheckIfBreakLoopNeeded(indexIncremented, ownMap, x, y);
         }
 
         private static void Decrement(int index, Point[] ownMap, out int indexDecremented, out bool breakLoop, int? x = null, char? y = null)
         {
-            indexDecremented = index--;
+            index--;
+            indexDecremented = index;
             breakLoop = CheckIfBreakLoopNeeded(indexDecremented, ownMap, x, y);
         }
 
         private static bool CheckIfBreakLoopNeeded(int index, Point[] ownMap, int? x = null, char? y = null)
         {
-            return x == null && y != null ? CheckStatus(CommonVariables.DefaultXAxis[index], y.Value, ownMap) : CheckStatus(x.Value, CommonVariables.DefaultYAxis[index], ownMap);
+            return x == null && y != null ? CheckStatus(CommonVariables.DefaultXAxis[index], y.Value, ownMap) : CheckStatus(x.Value, CommonVariables.DefaultYAxis[index], ownMap); // index = -1 problem
         }
 
         private static bool CheckStatus(int x, char y, Point[] ownMap)

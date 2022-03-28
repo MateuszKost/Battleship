@@ -5,6 +5,7 @@
         Free,
         Taken,
         Hitted,
-        Missed
+        Missed,
+        Sunk
     }
 }
