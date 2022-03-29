@@ -42,10 +42,10 @@ namespace MainObjects
             return new Player(nickName, ships, ownMap, enemyMap);
         }
 
-        public PointStatus Shot(Point point, IEnumerable<Ship> ships)
+        public PointStatus Shot(ValueTuple<int, char> point, IEnumerable<Ship> ships)
         {
-            Console.WriteLine("Oddano strzał w {0}{1}", point.X, point.Y);
-            bool hitted = ships.SelectMany(s => s.Points).SingleOrDefault(p => p.X == point.X && p.Y == point.Y) != null;
+            Console.WriteLine("Oddano strzał w {0}{1}", point.Item1, point.Item2);
+            bool hitted = ships.SelectMany(s => s.Points).SingleOrDefault(p => p.X == point.Item1 && p.Y == point.Item2) != null;
             if (hitted)
             {
                 Console.WriteLine("Trafiono");
@@ -58,16 +58,16 @@ namespace MainObjects
             }
         }
 
-        public void UpdateEnemyMap(Point point, PointStatus pointStatus)
+        public void UpdateEnemyMap(ValueTuple<int, char> pointValues, PointStatus pointStatus)
         {
-            point = EnemyMap.Single(p => p.X == point.X && p.Y == point.Y);
+            Point point = EnemyMap.Single(p => p.X == pointValues.Item1 && p.Y == pointValues.Item2);
             int index = Array.IndexOf(EnemyMap, point);
             EnemyMap[index].Status = pointStatus;
         }
 
-        public PointStatus UpdateOwnMap(Point point)
+        public PointStatus UpdateOwnMap(ValueTuple<int, char> pointValues)
         {
-            point = EnemyMap.Single(p => p.X == point.X && p.Y == point.Y);
+            Point point = EnemyMap.Single(p => p.X == pointValues.Item1 && p.Y == pointValues.Item2);
             int index = Array.IndexOf(EnemyMap, point);
             OwnMap[index].Status = PointStatus.Hitted;
 

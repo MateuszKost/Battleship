@@ -7,18 +7,18 @@ namespace Battleship
     {
         private readonly Random _random = new Random();
         private bool _lastTurn;
-        private Point _lastPoint = null;
-        private readonly Dictionary<Point, IndexType> _firstPlaterLastHittedPoints;
-        private readonly Dictionary<Point, IndexType> _firstPlaterNextProbablyPoints;
-        private readonly Dictionary<Point, IndexType> _secondPlaterLastHittedPoints;
-        private readonly Dictionary<Point, IndexType> _secondPlaterNextProbablyPoints;
+        private ValueTuple<int, char> _lastPoint = ValueTuple.Create(-1, ' '); // can i create valuetuple empty
+        private readonly Dictionary<ValueTuple<int, char>, IndexType> _firstPlaterLastHittedPoints;
+        private readonly Dictionary<ValueTuple<int, char>, IndexType> _firstPlaterNextProbablyPoints;
+        private readonly Dictionary<ValueTuple<int, char>, IndexType> _secondPlaterLastHittedPoints;
+        private readonly Dictionary<ValueTuple<int, char>, IndexType> _secondPlaterNextProbablyPoints;
 
         public Simulation()
         {
-            _firstPlaterLastHittedPoints = new Dictionary<Point, IndexType>();
-            _firstPlaterNextProbablyPoints = new Dictionary<Point, IndexType>();
-            _secondPlaterLastHittedPoints = new Dictionary<Point, IndexType>();
-            _secondPlaterNextProbablyPoints = new Dictionary<Point, IndexType>();
+            _firstPlaterLastHittedPoints = new Dictionary<ValueTuple<int, char>, IndexType>();
+            _firstPlaterNextProbablyPoints = new Dictionary<ValueTuple<int, char>, IndexType>();
+            _secondPlaterLastHittedPoints = new Dictionary<ValueTuple<int, char>, IndexType>();
+            _secondPlaterNextProbablyPoints = new Dictionary<ValueTuple<int, char>, IndexType>();
         }
 
         internal void Start(Player playerOne, Player playerTwo)
@@ -57,7 +57,7 @@ namespace Battleship
 
         private PointStatus Shot(Player playerOne, Player playerTwo, bool playerTurn, PointStatus pointStatus)
         {
-            Point point;
+            ValueTuple<int, char> point;
             if (playerTurn)
             {
                 point = WhereToShot(playerOne, playerTurn, pointStatus);
@@ -70,10 +70,9 @@ namespace Battleship
             }
         }
 
-        private Point WhereToShot(Player player, bool playerTurn, PointStatus pointStatus)
+        private ValueTuple<int, char> WhereToShot(Player player, bool playerTurn, PointStatus pointStatus)
         {
-            Point point;
-            if ((_lastPoint != null && _lastTurn == playerTurn && pointStatus != PointStatus.Sunk) || player.HittedButNotSunk)
+            if ((_lastPoint != (-1, '0') && _lastTurn == playerTurn && pointStatus != PointStatus.Sunk) || player.HittedButNotSunk)
             {
                 _lastPoint = CreateNearPoint(playerTurn);
                 return _lastPoint;
@@ -85,15 +84,15 @@ namespace Battleship
             }
         }
 
-        private Point CreatePoint()
+        private ValueTuple<int, char> CreatePoint()
         {
             int xIndex = _random.Next(CommonVariables.LastIndexOfX_Y_Axis);
             int yIndex = _random.Next(CommonVariables.LastIndexOfX_Y_Axis);
 
-            return Point.CreatePoint(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]);
+            return ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]);
         }
 
-        private Point CreateNearPoint(bool playerTurn)
+        private ValueTuple<int, char> CreateNearPoint(bool playerTurn)
         {
             int index;
             if (playerTurn)
@@ -212,32 +211,32 @@ namespace Battleship
 
         private void CreateDictionary(bool playerTurn)
         {
-            int xIndex = Array.IndexOf(CommonVariables.DefaultXAxis, _lastPoint.X);
-            int yIndex = Array.IndexOf(CommonVariables.DefaultYAxis, _lastPoint.Y);
+            int xIndex = Array.IndexOf(CommonVariables.DefaultXAxis, _lastPoint.Item1);
+            int yIndex = Array.IndexOf(CommonVariables.DefaultYAxis, _lastPoint.Item2);
             if (playerTurn)
             {
                 if(yIndex != CommonVariables.FirstIndexOfX_Y_Axis)
                 {
                     yIndex--;
-                    _firstPlaterNextProbablyPoints.Add(Point.CreatePoint(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.VerticalDown);
+                    _firstPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.VerticalDown);
                 }
 
                 if (yIndex != CommonVariables.LastIndexOfX_Y_Axis)
                 {
                     yIndex++;
-                    _firstPlaterNextProbablyPoints.Add(Point.CreatePoint(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.VerticalUp);
+                    _firstPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.VerticalUp);
                 }
 
                 if (xIndex != CommonVariables.FirstIndexOfX_Y_Axis)
                 {
                     xIndex--;
-                    _firstPlaterNextProbablyPoints.Add(Point.CreatePoint(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.HorizontalLeft);
+                    _firstPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.HorizontalLeft);
                 }
 
                 if (xIndex != CommonVariables.LastIndexOfX_Y_Axis)
                 {
                     xIndex++;
-                    _firstPlaterNextProbablyPoints.Add(Point.CreatePoint(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.HorizontalRight);
+                    _firstPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.HorizontalRight);
                 }
             }
             else
@@ -245,25 +244,25 @@ namespace Battleship
                 if (yIndex != CommonVariables.FirstIndexOfX_Y_Axis)
                 {
                     yIndex--;
-                    _secondPlaterNextProbablyPoints.Add(Point.CreatePoint(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.VerticalDown);
+                    _secondPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.VerticalDown);
                 }
 
                 if (yIndex != CommonVariables.LastIndexOfX_Y_Axis)
                 {
                     yIndex++;
-                    _secondPlaterNextProbablyPoints.Add(Point.CreatePoint(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.VerticalUp);
+                    _secondPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.VerticalUp);
                 }
 
                 if (xIndex != CommonVariables.FirstIndexOfX_Y_Axis)
                 {
                     xIndex--;
-                    _secondPlaterNextProbablyPoints.Add(Point.CreatePoint(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.HorizontalLeft);
+                    _secondPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.HorizontalLeft);
                 }
 
                 if (xIndex != CommonVariables.LastIndexOfX_Y_Axis)
                 {
                     xIndex++;
-                    _secondPlaterNextProbablyPoints.Add(Point.CreatePoint(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.HorizontalRight);
+                    _secondPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.HorizontalRight);
                 }
             }
         }
@@ -271,8 +270,8 @@ namespace Battleship
         private void UpdateDictionaries(bool playerTurn)
         {
             IndexType indexType;
-            int xIndex = Array.IndexOf(CommonVariables.DefaultXAxis, _lastPoint.X);
-            int yIndex = Array.IndexOf(CommonVariables.DefaultYAxis, _lastPoint.Y);
+            int xIndex = Array.IndexOf(CommonVariables.DefaultXAxis, _lastPoint.Item1);
+            int yIndex = Array.IndexOf(CommonVariables.DefaultYAxis, _lastPoint.Item2);
             if (playerTurn)
             {
                 indexType = _firstPlaterNextProbablyPoints[_lastPoint];
@@ -287,7 +286,7 @@ namespace Battleship
                         if(yIndex != CommonVariables.FirstIndexOfX_Y_Axis)
                         {
                             yIndex--;
-                            _firstPlaterNextProbablyPoints.Add(Point.CreatePoint(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.VerticalDown);
+                            _firstPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.VerticalDown);
                         }
                         break;
                     case IndexType.VerticalUp:
@@ -299,7 +298,7 @@ namespace Battleship
                         if (yIndex != CommonVariables.LastIndexOfX_Y_Axis)
                         {
                             yIndex++;
-                            _firstPlaterNextProbablyPoints.Add(Point.CreatePoint(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.VerticalUp);
+                            _firstPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.VerticalUp);
                         }
                         break;
                     case IndexType.HorizontalLeft:
@@ -311,7 +310,7 @@ namespace Battleship
                         if (xIndex != CommonVariables.FirstIndexOfX_Y_Axis)
                         {
                             xIndex--;
-                            _firstPlaterNextProbablyPoints.Add(Point.CreatePoint(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.HorizontalLeft);
+                            _firstPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.HorizontalLeft);
                         }
 
                         break;
@@ -324,7 +323,7 @@ namespace Battleship
                         if (xIndex != CommonVariables.LastIndexOfX_Y_Axis)
                         {
                             xIndex++;
-                            _firstPlaterNextProbablyPoints.Add(Point.CreatePoint(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.HorizontalRight);
+                            _firstPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.HorizontalRight);
                         }
                         break;
                 }
@@ -344,7 +343,7 @@ namespace Battleship
                         if (yIndex != CommonVariables.FirstIndexOfX_Y_Axis)
                         {
                             yIndex--;
-                            _secondPlaterNextProbablyPoints.Add(Point.CreatePoint(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.VerticalDown);
+                            _secondPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.VerticalDown);
                         }
                         break;
                     case IndexType.VerticalUp:
@@ -356,7 +355,7 @@ namespace Battleship
                         if (yIndex != CommonVariables.LastIndexOfX_Y_Axis)
                         {
                             yIndex++;
-                            _secondPlaterNextProbablyPoints.Add(Point.CreatePoint(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.VerticalUp);
+                            _secondPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.VerticalUp);
                         }
                         break;
                     case IndexType.HorizontalLeft:
@@ -368,7 +367,7 @@ namespace Battleship
                         if (xIndex != CommonVariables.FirstIndexOfX_Y_Axis)
                         {
                             xIndex--;
-                            _secondPlaterNextProbablyPoints.Add(Point.CreatePoint(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.HorizontalLeft);
+                            _secondPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.HorizontalLeft);
                         }
 
                         break;
@@ -381,7 +380,7 @@ namespace Battleship
                         if (xIndex != CommonVariables.LastIndexOfX_Y_Axis)
                         {
                             xIndex++;
-                            _secondPlaterNextProbablyPoints.Add(Point.CreatePoint(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.HorizontalRight);
+                            _secondPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.HorizontalRight);
                         }
                         break;
                 }
