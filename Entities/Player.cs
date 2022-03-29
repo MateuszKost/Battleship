@@ -71,9 +71,9 @@ namespace MainObjects
             int index = Array.IndexOf(EnemyMap, point);
             OwnMap[index].Status = PointStatus.Hitted;
 
-            foreach(Ship ship in Ships)
+            foreach (Ship ship in Ships)
             {
-                if(ship.Points.SingleOrDefault(p => p.X == point.X && p.Y == point.Y) != null)
+                if (ship.Points.SingleOrDefault(p => p.X == point.X && p.Y == point.Y) != null)
                 {
                     ship.Points.Remove(point);
                     HittedButNotSunk = true;
@@ -83,7 +83,7 @@ namespace MainObjects
                         HittedButNotSunk = false;
                         Ships.Remove(ship);
 
-                        if(Ships.Count == 0)
+                        if (Ships.Count == 0)
                         {
                             Console.WriteLine("Gracza {0} przegrał gre", NickName);
                         }
@@ -174,11 +174,11 @@ namespace MainObjects
 
             if (arrangement == CommonVariables.Horizontal)
             {
-                return FindOtherPointsPart2(startPoint, shipLength, ownMap, arrangement, startPoint.X);
+                return FindOtherPointsPart2(startPoint, shipLength, ownMap, arrangement, null, startPoint.Y);
             }
             else // Vertical arrangement
             {
-                return FindOtherPointsPart2(startPoint, shipLength, ownMap, arrangement, null, startPoint.Y);
+                return FindOtherPointsPart2(startPoint, shipLength, ownMap, arrangement, startPoint.X);
             }
         }
 
@@ -193,11 +193,11 @@ namespace MainObjects
 
             if (x == null && y != null)
             {
-                index = minimalIndex = maximalIndex = Array.IndexOf(CommonVariables.DefaultYAxis, startPoint.Y);
+                index = minimalIndex = maximalIndex = Array.IndexOf(CommonVariables.DefaultXAxis, startPoint.X);
             }
             else
             {
-                index = minimalIndex = maximalIndex = Array.IndexOf(CommonVariables.DefaultXAxis, startPoint.X);
+                index = minimalIndex = maximalIndex = Array.IndexOf(CommonVariables.DefaultYAxis, startPoint.Y); // nie robia sie poprawnie poziomo i pionowo
             }
 
             indexes = new List<int>
@@ -272,7 +272,15 @@ namespace MainObjects
                 }
                 else
                 {
-                    points.Add(Point.CreatePoint(CommonObjects.CommonVariables.DefaultXAxis[index], startPoint.Y, PointStatus.Taken));
+                    if (arrangement == CommonVariables.Horizontal)
+                    {
+                        points.Add(Point.CreatePoint(CommonObjects.CommonVariables.DefaultXAxis[index], startPoint.Y, PointStatus.Taken));
+
+                    }
+                    else
+                    {
+                        points.Add(Point.CreatePoint(startPoint.X, CommonObjects.CommonVariables.DefaultYAxis[index], PointStatus.Taken));
+                    }
                 }
 
                 shipLengthCopy--;

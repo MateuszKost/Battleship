@@ -3,7 +3,7 @@ using MainObjects;
 
 namespace Battleship
 {
-    internal class Simulation
+    internal class SimulationAlgorithm
     {
         private readonly Random _random = new Random();
         private bool _lastTurn;
@@ -13,7 +13,7 @@ namespace Battleship
         private readonly Dictionary<ValueTuple<int, char>, IndexType> _secondPlaterLastHittedPoints;
         private readonly Dictionary<ValueTuple<int, char>, IndexType> _secondPlaterNextProbablyPoints;
 
-        public Simulation()
+        public SimulationAlgorithm()
         {
             _firstPlaterLastHittedPoints = new Dictionary<ValueTuple<int, char>, IndexType>();
             _firstPlaterNextProbablyPoints = new Dictionary<ValueTuple<int, char>, IndexType>();
@@ -213,56 +213,68 @@ namespace Battleship
         {
             int xIndex = Array.IndexOf(CommonVariables.DefaultXAxis, _lastPoint.Item1);
             int yIndex = Array.IndexOf(CommonVariables.DefaultYAxis, _lastPoint.Item2);
+            int xIndexCopy = xIndex;
+            int yIndexCopy = yIndex;
+
+
             if (playerTurn)
             {
                 if(yIndex != CommonVariables.FirstIndexOfX_Y_Axis)
                 {
-                    yIndex--;
-                    _firstPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.VerticalDown);
+                    yIndexCopy--; //  to rebuild, there can't be such thing as it, use instead of it copy of index and find points near it
+                    _firstPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndexCopy]), IndexType.VerticalDown);
                 }
+
+                yIndexCopy = yIndex;
 
                 if (yIndex != CommonVariables.LastIndexOfX_Y_Axis)
                 {
-                    yIndex++;
-                    _firstPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.VerticalUp);
+                    yIndexCopy++;
+                    _firstPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndexCopy]), IndexType.VerticalUp);
                 }
 
                 if (xIndex != CommonVariables.FirstIndexOfX_Y_Axis)
                 {
-                    xIndex--;
-                    _firstPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.HorizontalLeft);
+                    xIndexCopy--;
+                    _firstPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndexCopy], CommonVariables.DefaultYAxis[yIndex]), IndexType.HorizontalLeft);
                 }
+
+                xIndexCopy = xIndex;
 
                 if (xIndex != CommonVariables.LastIndexOfX_Y_Axis)
                 {
-                    xIndex++;
-                    _firstPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.HorizontalRight);
+                    xIndexCopy++;
+                    _firstPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndexCopy], CommonVariables.DefaultYAxis[yIndex]), IndexType.HorizontalRight);
                 }
             }
             else
             {
                 if (yIndex != CommonVariables.FirstIndexOfX_Y_Axis)
                 {
-                    yIndex--;
-                    _secondPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.VerticalDown);
+                    yIndexCopy--;
+                    _secondPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndexCopy]), IndexType.VerticalDown);
                 }
+
+                yIndexCopy = yIndex;
 
                 if (yIndex != CommonVariables.LastIndexOfX_Y_Axis)
                 {
                     yIndex++;
-                    _secondPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.VerticalUp);
+                    _secondPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndexCopy]), IndexType.VerticalUp);
                 }
 
                 if (xIndex != CommonVariables.FirstIndexOfX_Y_Axis)
                 {
-                    xIndex--;
-                    _secondPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.HorizontalLeft);
+                    xIndexCopy--;
+                    _secondPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndexCopy], CommonVariables.DefaultYAxis[yIndex]), IndexType.HorizontalLeft);
                 }
+
+                xIndexCopy = xIndex;
 
                 if (xIndex != CommonVariables.LastIndexOfX_Y_Axis)
                 {
-                    xIndex++;
-                    _secondPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.HorizontalRight);
+                    xIndexCopy++;
+                    _secondPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndexCopy], CommonVariables.DefaultYAxis[yIndex]), IndexType.HorizontalRight);
                 }
             }
         }

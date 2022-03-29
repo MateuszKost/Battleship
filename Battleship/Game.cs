@@ -14,7 +14,7 @@ namespace Battleship
             Console.WriteLine();
             Console.WriteLine("Starting the simulation...");
 
-            Simulation simulation = new Simulation();
+            SimulationAlgorithm simulation = new SimulationAlgorithm();
             simulation.Start(playerOne, playerTwo);
         }
     }
