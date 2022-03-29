@@ -13,6 +13,10 @@ namespace Battleship
             Console.WriteLine();
             Console.WriteLine();
             Console.WriteLine("Starting the simulation...");
+
+            SimulationAlgorithm simulation = new SimulationAlgorithm();
+            simulation.Start(playerOne, playerTwo);
+            Console.WriteLine("koniec gry");
         }
     }
 }

@@ -4,6 +4,10 @@
     {
         Default,
         Higher,
-        Lower
+        Lower,
+        HorizontalRight,
+        HorizontalLeft,
+        VerticalUp,
+        VerticalDown
     }
 }
