@@ -16,6 +16,7 @@ namespace Battleship
 
             SimulationAlgorithm simulation = new SimulationAlgorithm();
             simulation.Start(playerOne, playerTwo);
+            Console.WriteLine("koniec gry");
         }
     }
 }

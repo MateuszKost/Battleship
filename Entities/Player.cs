@@ -73,7 +73,8 @@ namespace MainObjects
 
             foreach (Ship ship in Ships)
             {
-                if (ship.Points.SingleOrDefault(p => p.X == point.X && p.Y == point.Y) != null)
+                point = ship.Points.SingleOrDefault(p => p.X == pointValues.Item1 && p.Y == pointValues.Item2);
+                if (point != null)
                 {
                     ship.Points.Remove(point);
                     HittedButNotSunk = true;
