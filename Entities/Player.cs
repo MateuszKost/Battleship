@@ -198,20 +198,21 @@ namespace MainObjects
             }
             else
             {
-                index = minimalIndex = maximalIndex = Array.IndexOf(CommonVariables.DefaultYAxis, startPoint.Y); // nie robia sie poprawnie poziomo i pionowo
+                index = minimalIndex = maximalIndex = Array.IndexOf(CommonVariables.DefaultYAxis, startPoint.Y);
             }
 
             indexes = new List<int>
                 {
                     minimalIndex
                 };
-            indexType = CheckIndexes(indexes);
 
             points.Add(startPoint);
             shipLengthCopy--;
 
             while (shipLengthCopy > 0)
             {
+                indexType = CheckIndexes(indexes);
+
                 switch (indexType)
                 {
                     case IndexType.Lower:
@@ -230,7 +231,6 @@ namespace MainObjects
                             index = minimalIndex;
                             if (breakLoop)
                             {
-                                indexType = IndexType.Higher;
                                 Increment(maximalIndex, ownMap, out maximalIndex, out breakLoop, x, y);
                                 index = maximalIndex;
                             }
@@ -243,16 +243,10 @@ namespace MainObjects
                             index = maximalIndex;
                             if (breakLoop)
                             {
-                                indexType = IndexType.Lower;
                                 Decrement(minimalIndex, ownMap, out minimalIndex, out breakLoop, x, y);
                                 index = minimalIndex;
                             }
                             indexes.Add(index);
-                        }
-
-                        if (indexType == IndexType.Default)
-                        {
-                            indexType = CheckIndexes(indexes);
                         }
                         break;
                 }

@@ -124,7 +124,7 @@ namespace Battleship
                 result = _secondPlayerPointsToShoot.ElementAt(_random.Next(_secondPlayerPointsToShoot.Count())).Key;
                 while (_secondPlayerLastHittedPoints.ContainsKey(result))
                 {
-                    result = _firstPlaterPointsToShoot.ElementAt(_random.Next(_firstPlaterPointsToShoot.Count())).Key;
+                    result = _secondPlayerPointsToShoot.ElementAt(_random.Next(_secondPlayerPointsToShoot.Count())).Key;
                 }
                 _secondPlayerPointsToShoot.Remove(result);
             }
