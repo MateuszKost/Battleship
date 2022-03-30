@@ -58,7 +58,7 @@ namespace MainObjects
 
         public PointStatus UpdateOwnMap(ValueTuple<int, char> pointValues)
         {
-            Point point = EnemyMap.Single(p => p.X == pointValues.Item1 && p.Y == pointValues.Item2);
+            Point? point = EnemyMap.Single(p => p.X == pointValues.Item1 && p.Y == pointValues.Item2);
             int index = Array.IndexOf(EnemyMap, point);
             OwnMap[index].Status = PointStatus.Hitted;
 
