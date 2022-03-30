@@ -7,7 +7,7 @@ namespace Battleship
     {
         private readonly Random _random = new Random();
         private bool _lastTurn;
-        private ValueTuple<int, char> _lastPoint = ValueTuple.Create(-1, ' '); // can i create valuetuple empty
+        private ValueTuple<int, char> _lastPoint = ValueTuple.Create(int.MinValue, char.MinValue); // can i create valuetuple empty
         private readonly Dictionary<ValueTuple<int, char>, IndexType> _firstPlaterLastHittedPoints;
         private readonly Dictionary<ValueTuple<int, char>, IndexType> _firstPlaterNextProbablyPoints;
         private readonly Dictionary<ValueTuple<int, char>, IndexType> _firstPlaterPointsToShoot;
@@ -45,12 +45,12 @@ namespace Battleship
             if (_random.Next(CommonVariables.Players.Count()) == CommonVariables.Zero)
             {
                 playerTurn = CommonVariables.SecondPlayer;
-                Console.WriteLine("Gracz pierwszy rozpoczyna gre!");
+                Console.WriteLine(CommonVariables.FirstPlayerStartsTheGame);
             }
             else
             {
                 playerTurn = CommonVariables.FirstPlayer;
-                Console.WriteLine("Gracz drugi rozpoczyna gre!");
+                Console.WriteLine(CommonVariables.SecondPlayerStartsTheGame);
             }
 
             PointStatus pointStatus = PointStatus.Free;
@@ -67,9 +67,9 @@ namespace Battleship
                 {
                     playerTurn = !playerTurn;
                     if (playerTurn)
-                        Console.WriteLine("Ruch gracza 1!");
+                        Console.WriteLine(CommonVariables.FirstPlyaerTurn);
                     else
-                        Console.WriteLine("Ruch gracza 2!");
+                        Console.WriteLine(CommonVariables.SecondPlayerTurn);
                 }
                 pointStatus = Shot(playerOne, playerTwo, playerTurn, pointStatus);
                 pointStatus = CheckIfShotHitted(playerOne, playerTwo, pointStatus, playerTurn);
@@ -95,7 +95,7 @@ namespace Battleship
 
         private ValueTuple<int, char> WhereToShot(Player player, bool playerTurn, PointStatus pointStatus)
         {
-            if ((_lastPoint != (-1, ' ') && _lastTurn == playerTurn && pointStatus != PointStatus.Sunk) || player.HittedButNotSunk)
+            if ((_lastPoint != (int.MinValue, char.MinValue) && _lastTurn == playerTurn && pointStatus != PointStatus.Sunk) || player.HittedButNotSunk)
             {
                 _lastPoint = CreateNearPoint(playerTurn, player);
                 return _lastPoint;
@@ -138,14 +138,14 @@ namespace Battleship
             if (playerTurn)
             {
                 index = _random.Next(_firstPlaterNextProbablyPoints.Count);
-                if (_firstPlaterNextProbablyPoints.Count == 0)
+                if (_firstPlaterNextProbablyPoints.Count == CommonVariables.Zero)
                 {
                     return CreatePoint(playerTurn);
                 }
                 while (_firstPlaterLastHittedPoints.ContainsKey(_firstPlaterNextProbablyPoints.ElementAt(index).Key))
                 {
                     _firstPlaterNextProbablyPoints.Remove(_firstPlaterNextProbablyPoints.ElementAt(index).Key);
-                    if(_firstPlaterNextProbablyPoints.Count == 0)
+                    if(_firstPlaterNextProbablyPoints.Count == CommonVariables.Zero)
                     {
                         return CreatePoint(playerTurn);
                     }
@@ -156,14 +156,14 @@ namespace Battleship
             else
             {
                 index = _random.Next(_secondPlayerNextProbablyPoints.Count);
-                if (_secondPlayerNextProbablyPoints.Count == 0)
+                if (_secondPlayerNextProbablyPoints.Count == CommonVariables.Zero)
                 {
                     return CreatePoint(playerTurn);
                 }
                 while (_secondPlayerLastHittedPoints.ContainsKey(_secondPlayerNextProbablyPoints.ElementAt(index).Key))
                 {
                     _secondPlayerNextProbablyPoints.Remove(_secondPlayerNextProbablyPoints.ElementAt(index).Key);
-                    if (_secondPlayerNextProbablyPoints.Count == 0)
+                    if (_secondPlayerNextProbablyPoints.Count == CommonVariables.Zero)
                     {
                         return CreatePoint(playerTurn);
                     }
@@ -287,7 +287,7 @@ namespace Battleship
             {
                 if (yIndex != CommonVariables.FirstIndexOfX_Y_Axis)
                 {
-                    yIndexCopy--; //  to rebuild, there can't be such thing as it, use instead of it copy of index and find points near it
+                    yIndexCopy--;
                     _firstPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndexCopy]), IndexType.VerticalDown);
                 }
 
