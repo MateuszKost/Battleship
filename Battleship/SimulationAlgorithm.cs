@@ -6,35 +6,22 @@ namespace Battleship
     internal class SimulationAlgorithm
     {
         private readonly Random _random = new Random();
-        private bool _lastTurn;
-        private ValueTuple<int, char> _lastPoint = ValueTuple.Create(-1, ' '); // can i create valuetuple empty
-        private readonly Dictionary<ValueTuple<int, char>, IndexType> _firstPlaterLastHittedPoints;
-        private readonly Dictionary<ValueTuple<int, char>, IndexType> _firstPlaterNextProbablyPoints;
-        private readonly Dictionary<ValueTuple<int, char>, IndexType> _firstPlaterPointsToShoot;
+        private readonly Dictionary<ValueTuple<int, char>, IndexType> _firstPlayerLastHittedPoints;
+        private readonly Dictionary<ValueTuple<int, char>, IndexType> _firstPlayerNextProbablyPoints;
+        private readonly Dictionary<ValueTuple<int, char>, IndexType> _firstPlayerPointsToShoot;
         private readonly Dictionary<ValueTuple<int, char>, IndexType> _secondPlayerLastHittedPoints;
         private readonly Dictionary<ValueTuple<int, char>, IndexType> _secondPlayerNextProbablyPoints;
         private readonly Dictionary<ValueTuple<int, char>, IndexType> _secondPlayerPointsToShoot;
+        private ValueTuple<int, char> _lastPoint = ValueTuple.Create(int.MinValue, char.MinValue);
 
         public SimulationAlgorithm()
         {
-            _firstPlaterLastHittedPoints = new Dictionary<ValueTuple<int, char>, IndexType>();
-            _firstPlaterNextProbablyPoints = new Dictionary<ValueTuple<int, char>, IndexType>();
+            _firstPlayerLastHittedPoints = new Dictionary<ValueTuple<int, char>, IndexType>();
+            _firstPlayerNextProbablyPoints = new Dictionary<ValueTuple<int, char>, IndexType>();
             _secondPlayerLastHittedPoints = new Dictionary<ValueTuple<int, char>, IndexType>();
             _secondPlayerNextProbablyPoints = new Dictionary<ValueTuple<int, char>, IndexType>();
-            _firstPlaterPointsToShoot = new Dictionary<(int, char), IndexType>();
+            _firstPlayerPointsToShoot = new Dictionary<(int, char), IndexType>();
             _secondPlayerPointsToShoot = new Dictionary<(int, char), IndexType>();
-        }
-
-        private void FillDictionaries()
-        {
-            foreach (char y in CommonVariables.DefaultYAxis)
-            {
-                foreach (int x in CommonVariables.DefaultXAxis)
-                {
-                    _firstPlaterPointsToShoot.Add((x, y), IndexType.Default);
-                    _secondPlayerPointsToShoot.Add((x, y), IndexType.Default);
-                }
-            }
         }
 
         internal void Start(Player playerOne, Player playerTwo)
@@ -45,21 +32,17 @@ namespace Battleship
             if (_random.Next(CommonVariables.Players.Count()) == CommonVariables.Zero)
             {
                 playerTurn = CommonVariables.SecondPlayer;
-                Console.WriteLine("Gracz pierwszy rozpoczyna gre!");
+                Console.WriteLine(CommonVariables.FirstPlayerStartsTheGame);
             }
             else
             {
                 playerTurn = CommonVariables.FirstPlayer;
-                Console.WriteLine("Gracz drugi rozpoczyna gre!");
+                Console.WriteLine(CommonVariables.SecondPlayerStartsTheGame);
             }
 
             PointStatus pointStatus = PointStatus.Free;
 
-            pointStatus = Shot(playerOne, playerTwo, playerTurn, pointStatus);
-            pointStatus = CheckIfShotHitted(playerOne, playerTwo, pointStatus, playerTurn);
-            CheckPointStatus(pointStatus, playerTurn);
-
-            _lastTurn = playerTurn;
+            pointStatus = ShootAndCheckIfHitted(playerOne, playerTwo, playerTurn, pointStatus);
 
             while (playerOne.Ships.Count != CommonVariables.Zero && playerTwo.Ships.Count != CommonVariables.Zero)
             {
@@ -67,403 +50,359 @@ namespace Battleship
                 {
                     playerTurn = !playerTurn;
                     if (playerTurn)
-                        Console.WriteLine("Ruch gracza 1!");
+                        Console.WriteLine(CommonVariables.FirstPlyaerTurn);
                     else
-                        Console.WriteLine("Ruch gracza 2!");
+                        Console.WriteLine(CommonVariables.SecondPlayerTurn);
                 }
-                pointStatus = Shot(playerOne, playerTwo, playerTurn, pointStatus);
-                pointStatus = CheckIfShotHitted(playerOne, playerTwo, pointStatus, playerTurn);
-                CheckPointStatus(pointStatus, playerTurn);
-                _lastTurn = playerTurn;
+                pointStatus = ShootAndCheckIfHitted(playerOne, playerTwo, playerTurn, pointStatus);
             }
         }
 
-        private PointStatus Shot(Player playerOne, Player playerTwo, bool playerTurn, PointStatus pointStatus)
+        private void FillDictionaries()
         {
-            ValueTuple<int, char> point;
+            foreach (char y in CommonVariables.DefaultYAxis)
+            {
+                foreach (int x in CommonVariables.DefaultXAxis)
+                {
+                    _firstPlayerPointsToShoot.Add((x, y), IndexType.Default);
+                    _secondPlayerPointsToShoot.Add((x, y), IndexType.Default);
+                }
+            }
+        }
+
+        private PointStatus ShootAndCheckIfHitted(Player playerOne, Player playerTwo, bool playerTurn, PointStatus pointStatus)
+        {
             if (playerTurn)
             {
-                point = WhereToShot(playerTwo, playerTurn, pointStatus);
-                return playerOne.Shot(point, playerTwo.Ships);
+                pointStatus = FirstPlayerShot(playerOne, playerTwo, playerTurn, pointStatus);
+                pointStatus = CheckIfShotHittedForFirstPlayer(playerOne, playerTwo, pointStatus);
+                CheckPointStatusForFirstPlayer(pointStatus);
             }
             else
             {
-                point = WhereToShot(playerOne, playerTurn, pointStatus);
-                return playerTwo.Shot(point, playerOne.Ships);
+                pointStatus = SecondPlayerShot(playerOne, playerTwo, playerTurn, pointStatus);
+                pointStatus = CheckIfShotHittedForSecondPlayer(playerOne, playerTwo, pointStatus);
+                CheckPointStatusForSecondPlayer(pointStatus);
             }
+
+            return pointStatus;
         }
 
-        private ValueTuple<int, char> WhereToShot(Player player, bool playerTurn, PointStatus pointStatus)
+        private PointStatus FirstPlayerShot(Player playerOne, Player playerTwo, bool playerTurn, PointStatus pointStatus)
         {
-            if ((_lastPoint != (-1, ' ') && _lastTurn == playerTurn && pointStatus != PointStatus.Sunk) || player.HittedButNotSunk)
-            {
-                _lastPoint = CreateNearPoint(playerTurn, player);
-                return _lastPoint;
-            }
-            else
-            {
-                _lastPoint = CreatePoint(playerTurn);
-                return _lastPoint;
-            }
+            ValueTuple<int, char> point = CreatePointForFirstPlayer();
+            _lastPoint = point;
+            return playerOne.Shot(point, playerTwo.Ships);
         }
 
-        private ValueTuple<int, char> CreatePoint(bool playerTurn)
+        private PointStatus SecondPlayerShot(Player playerOne, Player playerTwo, bool playerTurn, PointStatus pointStatus)
         {
-            ValueTuple<int, char> result;
-            if (playerTurn)
-            {
-                result = _firstPlaterPointsToShoot.ElementAt(_random.Next(_firstPlaterPointsToShoot.Count())).Key;
-                while (_firstPlaterLastHittedPoints.ContainsKey(result))
-                {
-                    result = _firstPlaterPointsToShoot.ElementAt(_random.Next(_firstPlaterPointsToShoot.Count())).Key;
-                }
-                _firstPlaterPointsToShoot.Remove(result);
-            }
-            else
-            {
-                result = _secondPlayerPointsToShoot.ElementAt(_random.Next(_secondPlayerPointsToShoot.Count())).Key;
-                while (_secondPlayerLastHittedPoints.ContainsKey(result))
-                {
-                    result = _secondPlayerPointsToShoot.ElementAt(_random.Next(_secondPlayerPointsToShoot.Count())).Key;
-                }
-                _secondPlayerPointsToShoot.Remove(result);
-            }
+            ValueTuple<int, char> point = CreatePointForSecondPlayer();
+            _lastPoint = point;
+            return playerTwo.Shot(point, playerOne.Ships);
+        }
 
+        private ValueTuple<int, char> CreatePointForFirstPlayer()
+        {
+            int index = _random.Next(_firstPlayerNextProbablyPoints.Count);
+            if (_firstPlayerNextProbablyPoints.Count == CommonVariables.Zero)
+            {
+                return CreateNewPointForFirstPlayer();
+            }
+            while (_firstPlayerLastHittedPoints.ContainsKey(_firstPlayerNextProbablyPoints.ElementAt(index).Key))
+            {
+                _firstPlayerNextProbablyPoints.Remove(_firstPlayerNextProbablyPoints.ElementAt(index).Key);
+                if (_firstPlayerNextProbablyPoints.Count == CommonVariables.Zero)
+                {
+                    return CreateNewPointForFirstPlayer();
+                }
+                index = _random.Next(_firstPlayerNextProbablyPoints.Count);
+            }
+            return _firstPlayerNextProbablyPoints.ElementAt(index).Key;
+        }
+
+        private ValueTuple<int, char> CreatePointForSecondPlayer()
+        {
+            int index = _random.Next(_secondPlayerNextProbablyPoints.Count);
+            if (_secondPlayerNextProbablyPoints.Count == CommonVariables.Zero)
+            {
+                return CreateNewPointForSecondPlayer();
+            }
+            while (_secondPlayerLastHittedPoints.ContainsKey(_secondPlayerNextProbablyPoints.ElementAt(index).Key))
+            {
+                _secondPlayerNextProbablyPoints.Remove(_secondPlayerNextProbablyPoints.ElementAt(index).Key);
+                if (_secondPlayerNextProbablyPoints.Count == CommonVariables.Zero)
+                {
+                    return CreateNewPointForSecondPlayer();
+                }
+                index = _random.Next(_secondPlayerNextProbablyPoints.Count);
+            }
+            return _secondPlayerNextProbablyPoints.ElementAt(index).Key;
+        }
+
+        private ValueTuple<int, char> CreateNewPointForFirstPlayer()
+        {
+            ValueTuple<int, char> result = _firstPlayerPointsToShoot.ElementAt(_random.Next(_firstPlayerPointsToShoot.Count)).Key;
+            while (_firstPlayerLastHittedPoints.ContainsKey(result))
+            {
+                result = _firstPlayerPointsToShoot.ElementAt(_random.Next(_firstPlayerPointsToShoot.Count)).Key;
+            }
+            _firstPlayerPointsToShoot.Remove(result);
             return result;
         }
 
-        private ValueTuple<int, char> CreateNearPoint(bool playerTurn, Player player)
+        private ValueTuple<int, char> CreateNewPointForSecondPlayer()
         {
-            int index;
-            if (playerTurn)
+            ValueTuple<int, char> result = _secondPlayerPointsToShoot.ElementAt(_random.Next(_secondPlayerPointsToShoot.Count)).Key;
+            while (_secondPlayerLastHittedPoints.ContainsKey(result))
             {
-                index = _random.Next(_firstPlaterNextProbablyPoints.Count);
-                if (_firstPlaterNextProbablyPoints.Count == 0)
-                {
-                    return CreatePoint(playerTurn);
-                }
-                while (_firstPlaterLastHittedPoints.ContainsKey(_firstPlaterNextProbablyPoints.ElementAt(index).Key))
-                {
-                    _firstPlaterNextProbablyPoints.Remove(_firstPlaterNextProbablyPoints.ElementAt(index).Key);
-                    if(_firstPlaterNextProbablyPoints.Count == 0)
+                result = _secondPlayerPointsToShoot.ElementAt(_random.Next(_secondPlayerPointsToShoot.Count)).Key;
+            }
+            _secondPlayerPointsToShoot.Remove(result);
+            return result;
+        }
+
+        private PointStatus CheckIfShotHittedForFirstPlayer(Player playerOne, Player playerTwo, PointStatus pointStatus)
+        {
+            switch (pointStatus)
+            {
+                case PointStatus.Missed:
+                    playerOne.UpdateEnemyMap(_lastPoint, pointStatus);
+                    return pointStatus;
+                case PointStatus.Hitted:
+                    playerOne.UpdateEnemyMap(_lastPoint, pointStatus);
+                    return playerTwo.UpdateOwnMap(_lastPoint);
+            }
+            return pointStatus;
+        }
+
+        private PointStatus CheckIfShotHittedForSecondPlayer(Player playerOne, Player playerTwo, PointStatus pointStatus)
+        {
+            switch (pointStatus)
+            {
+                case PointStatus.Missed:
+                    playerTwo.UpdateEnemyMap(_lastPoint, pointStatus);
+                    return pointStatus;
+                case PointStatus.Hitted:
+                    playerTwo.UpdateEnemyMap(_lastPoint, pointStatus);
+                    return playerOne.UpdateOwnMap(_lastPoint);
+            }
+            return pointStatus;
+        }
+
+        private void CheckPointStatusForFirstPlayer(PointStatus pointStatus)
+        {
+            switch (pointStatus)
+            {
+                case PointStatus.Missed:
+                    _firstPlayerLastHittedPoints.Add(_lastPoint, IndexType.Default);
+                    if (_firstPlayerNextProbablyPoints.Any())
                     {
-                        return CreatePoint(playerTurn);
+                        CheckDictionariesForFirstPlayer();
                     }
-                    index = _random.Next(_firstPlaterNextProbablyPoints.Count);
-                }
-                return _firstPlaterNextProbablyPoints.ElementAt(index).Key;
+                    break;
+                case PointStatus.Hitted:
+                    _firstPlayerLastHittedPoints.Add(_lastPoint, IndexType.Default);
+                    CheckDictionariesForFirstPlayer();
+                    break;
+                case PointStatus.Sunk:
+                    _firstPlayerLastHittedPoints.Add(_lastPoint, IndexType.Default);
+                    _firstPlayerNextProbablyPoints.Clear();
+                    break;
             }
-            else
+        }
+
+        private void CheckPointStatusForSecondPlayer(PointStatus pointStatus)
+        {
+            switch (pointStatus)
             {
-                index = _random.Next(_secondPlayerNextProbablyPoints.Count);
-                if (_secondPlayerNextProbablyPoints.Count == 0)
-                {
-                    return CreatePoint(playerTurn);
-                }
-                while (_secondPlayerLastHittedPoints.ContainsKey(_secondPlayerNextProbablyPoints.ElementAt(index).Key))
-                {
-                    _secondPlayerNextProbablyPoints.Remove(_secondPlayerNextProbablyPoints.ElementAt(index).Key);
-                    if (_secondPlayerNextProbablyPoints.Count == 0)
+                case PointStatus.Missed:
+                    _secondPlayerLastHittedPoints.Add(_lastPoint, IndexType.Default);
+                    if (_secondPlayerNextProbablyPoints.Any())
                     {
-                        return CreatePoint(playerTurn);
+                        CheckDictionariesForSecondPlayer();
                     }
-                    index = _random.Next(_secondPlayerNextProbablyPoints.Count);
-                }
-                return _secondPlayerNextProbablyPoints.ElementAt(index).Key;
+                    break;
+                case PointStatus.Hitted:
+                    _secondPlayerLastHittedPoints.Add(_lastPoint, IndexType.Default);
+                    CheckDictionariesForSecondPlayer();
+                    break;
+                case PointStatus.Sunk:
+                    _secondPlayerLastHittedPoints.Add(_lastPoint, IndexType.Default);
+                    _secondPlayerNextProbablyPoints.Clear();
+                    break;
             }
         }
 
-        private PointStatus CheckIfShotHitted(Player playerOne, Player playerTwo, PointStatus pointStatus, bool playerTurn)
+        private void CheckDictionariesForFirstPlayer()
         {
-            if (playerTurn)
+            if (_firstPlayerNextProbablyPoints.Any())
             {
-                switch (pointStatus)
-                {
-                    case PointStatus.Missed:
-                        playerOne.UpdateEnemyMap(_lastPoint, pointStatus);
-                        return pointStatus;
-                    case PointStatus.Hitted:
-                        playerOne.UpdateEnemyMap(_lastPoint, pointStatus);
-                        return playerTwo.UpdateOwnMap(_lastPoint);
-                }
-                return pointStatus;
+                UpdateDictionariesForFirstPlayer();
             }
             else
             {
-                switch (pointStatus)
-                {
-                    case PointStatus.Missed:
-                        playerTwo.UpdateEnemyMap(_lastPoint, pointStatus);
-                        return pointStatus;
-                    case PointStatus.Hitted:
-                        playerTwo.UpdateEnemyMap(_lastPoint, pointStatus);
-                        return playerOne.UpdateOwnMap(_lastPoint);
-                }
-                return pointStatus;
+                CreateDictionaryForFirstPlayer();
             }
         }
 
-        private void CheckPointStatus(PointStatus pointStatus, bool playerTurn)
+        private void CheckDictionariesForSecondPlayer()
         {
-            if (playerTurn)
+            if (_secondPlayerNextProbablyPoints.Any())
             {
-                switch (pointStatus)
-                {
-                    case PointStatus.Missed:
-                        _firstPlaterLastHittedPoints.Add(_lastPoint, IndexType.Default);
-                        if (_firstPlaterNextProbablyPoints.Any())
-                        {
-                            CheckDictionaries(playerTurn);
-                        }
-                        break;
-                    case PointStatus.Hitted:
-                        _firstPlaterLastHittedPoints.Add(_lastPoint, IndexType.Default);
-                        CheckDictionaries(playerTurn);
-                        break;
-                    case PointStatus.Sunk:
-                        _firstPlaterLastHittedPoints.Add(_lastPoint, IndexType.Default);
-                        _firstPlaterNextProbablyPoints.Clear();
-                        break;
-                }
+                UpdateDictionariesForSecondPlayer();
             }
             else
             {
-                switch (pointStatus)
-                {
-                    case PointStatus.Missed:
-                        _secondPlayerLastHittedPoints.Add(_lastPoint, IndexType.Default);
-                        if (_secondPlayerNextProbablyPoints.Any())
-                        {
-                            CheckDictionaries(playerTurn);
-                        }
-                        break;
-                    case PointStatus.Hitted:
-                        _secondPlayerLastHittedPoints.Add(_lastPoint, IndexType.Default);
-                        CheckDictionaries(playerTurn);
-                        break;
-                    case PointStatus.Sunk:
-                        _secondPlayerLastHittedPoints.Add(_lastPoint, IndexType.Default);
-                        _secondPlayerNextProbablyPoints.Clear();
-                        break;
-                }
+                CreateDictionaryForSecondPlayer();
             }
         }
 
-        private void CheckDictionaries(bool playerTurn)
+        private void CreateDictionaryForFirstPlayer()
         {
-            if (playerTurn)
-            {
-                if (_firstPlaterNextProbablyPoints.Any())
-                {
-                    UpdateDictionaries(playerTurn);
-                }
-                else
-                {
-                    CreateDictionary(playerTurn);
-                }
-            }
-            else
-            {
-                if (_secondPlayerNextProbablyPoints.Any())
-                {
-                    UpdateDictionaries(playerTurn);
-                }
-                else
-                {
-                    CreateDictionary(playerTurn);
-                }
-            }
-        }
-
-        private void CreateDictionary(bool playerTurn)
-        {
-            int xIndex = Array.IndexOf(CommonVariables.DefaultXAxis, _lastPoint.Item1);
-            int yIndex = Array.IndexOf(CommonVariables.DefaultYAxis, _lastPoint.Item2);
+            FindIndexes(out int xIndex, out int yIndex);
             int xIndexCopy = xIndex;
             int yIndexCopy = yIndex;
 
+            TryToAddPointToNextProbablyPointsForFirstPlayer(IndexType.VerticalDown, xIndex, yIndexCopy);
+            yIndexCopy = yIndex;
+            TryToAddPointToNextProbablyPointsForFirstPlayer(IndexType.VerticalUp, xIndex, yIndexCopy);
+            TryToAddPointToNextProbablyPointsForFirstPlayer(IndexType.HorizontalLeft, xIndexCopy, yIndex);
+            xIndexCopy = xIndex;
+            TryToAddPointToNextProbablyPointsForFirstPlayer(IndexType.HorizontalRight, xIndexCopy, yIndex);
+        }
 
-            if (playerTurn)
+        private void CreateDictionaryForSecondPlayer()
+        {
+            FindIndexes(out int xIndex, out int yIndex);
+            int xIndexCopy = xIndex;
+            int yIndexCopy = yIndex;
+
+            TryToAddPointToNextProbablyPointsForSecondPlayer(IndexType.VerticalDown, xIndex, yIndexCopy);
+            yIndexCopy = yIndex;
+            TryToAddPointToNextProbablyPointsForSecondPlayer(IndexType.VerticalUp, xIndex, yIndexCopy);
+            TryToAddPointToNextProbablyPointsForSecondPlayer(IndexType.HorizontalLeft, xIndexCopy, yIndex);
+            xIndexCopy = xIndex;
+            TryToAddPointToNextProbablyPointsForSecondPlayer(IndexType.HorizontalRight, xIndexCopy, yIndex);
+        }
+
+        private void UpdateDictionariesForFirstPlayer()
+        {
+            IndexType indexType = _firstPlayerNextProbablyPoints[_lastPoint];
+            FindIndexes(out int xIndex, out int yIndex);
+
+            switch (indexType)
             {
-                if (yIndex != CommonVariables.FirstIndexOfX_Y_Axis)
-                {
-                    yIndexCopy--; //  to rebuild, there can't be such thing as it, use instead of it copy of index and find points near it
-                    _firstPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndexCopy]), IndexType.VerticalDown);
-                }
-
-                yIndexCopy = yIndex;
-
-                if (yIndex != CommonVariables.LastIndexOfX_Y_Axis)
-                {
-                    yIndexCopy++;
-                    _firstPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndexCopy]), IndexType.VerticalUp);
-                }
-
-                if (xIndex != CommonVariables.FirstIndexOfX_Y_Axis)
-                {
-                    xIndexCopy--;
-                    _firstPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndexCopy], CommonVariables.DefaultYAxis[yIndex]), IndexType.HorizontalLeft);
-                }
-
-                xIndexCopy = xIndex;
-
-                if (xIndex != CommonVariables.LastIndexOfX_Y_Axis)
-                {
-                    xIndexCopy++;
-                    _firstPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndexCopy], CommonVariables.DefaultYAxis[yIndex]), IndexType.HorizontalRight);
-                }
+                case IndexType.VerticalDown:
+                    foreach (var item in _firstPlayerNextProbablyPoints.Where(i => i.Value == IndexType.HorizontalLeft || i.Value == IndexType.HorizontalRight))
+                    {
+                        _firstPlayerNextProbablyPoints.Remove(item.Key);
+                    }
+                    break;
+                case IndexType.VerticalUp:
+                    foreach (var item in _firstPlayerNextProbablyPoints.Where(i => i.Value == IndexType.HorizontalLeft || i.Value == IndexType.HorizontalRight))
+                    {
+                        _firstPlayerNextProbablyPoints.Remove(item.Key);
+                    }
+                    break;
+                case IndexType.HorizontalLeft:
+                    foreach (var item in _firstPlayerNextProbablyPoints.Where(i => i.Value == IndexType.VerticalDown || i.Value == IndexType.VerticalUp))
+                    {
+                        _firstPlayerNextProbablyPoints.Remove(item.Key);
+                    }
+                    break;
+                case IndexType.HorizontalRight:
+                    foreach (var item in _firstPlayerNextProbablyPoints.Where(i => i.Value == IndexType.VerticalDown || i.Value == IndexType.VerticalUp))
+                    {
+                        _firstPlayerNextProbablyPoints.Remove(item.Key);
+                    }
+                    break;
             }
-            else
+
+            TryToAddPointToNextProbablyPointsForFirstPlayer(indexType, xIndex, yIndex);
+            _firstPlayerNextProbablyPoints.Remove(_lastPoint);
+        }
+
+        private void UpdateDictionariesForSecondPlayer()
+        {
+            IndexType indexType = _secondPlayerNextProbablyPoints[_lastPoint];
+            FindIndexes(out int xIndex, out int yIndex);
+
+            switch (indexType)
             {
-                if (yIndex != CommonVariables.FirstIndexOfX_Y_Axis)
-                {
-                    yIndexCopy--;
-                    _secondPlayerNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndexCopy]), IndexType.VerticalDown);
-                }
+                case IndexType.VerticalDown:
+                    foreach (var item in _secondPlayerNextProbablyPoints.Where(i => i.Value == IndexType.HorizontalLeft || i.Value == IndexType.HorizontalRight))
+                    {
+                        _secondPlayerNextProbablyPoints.Remove(item.Key);
+                    }
+                    break;
+                case IndexType.VerticalUp:
+                    foreach (var item in _secondPlayerNextProbablyPoints.Where(i => i.Value == IndexType.HorizontalLeft || i.Value == IndexType.HorizontalRight))
+                    {
+                        _secondPlayerNextProbablyPoints.Remove(item.Key);
+                    }
+                    break;
+                case IndexType.HorizontalLeft:
+                    foreach (var item in _secondPlayerNextProbablyPoints.Where(i => i.Value == IndexType.VerticalDown || i.Value == IndexType.VerticalUp))
+                    {
+                        _secondPlayerNextProbablyPoints.Remove(item.Key);
+                    }
+                    break;
+                case IndexType.HorizontalRight:
+                    foreach (var item in _secondPlayerNextProbablyPoints.Where(i => i.Value == IndexType.VerticalDown || i.Value == IndexType.VerticalUp))
+                    {
+                        _secondPlayerNextProbablyPoints.Remove(item.Key);
+                    }
+                    break;
+            }
 
-                yIndexCopy = yIndex;
+            TryToAddPointToNextProbablyPointsForSecondPlayer(indexType, xIndex, yIndex);
+            _secondPlayerNextProbablyPoints.Remove(_lastPoint);
+        }
 
-                if (yIndex != CommonVariables.LastIndexOfX_Y_Axis)
-                {
-                    yIndexCopy++;
-                    _secondPlayerNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndexCopy]), IndexType.VerticalUp);
-                }
-
-                if (xIndex != CommonVariables.FirstIndexOfX_Y_Axis)
-                {
-                    xIndexCopy--;
-                    _secondPlayerNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndexCopy], CommonVariables.DefaultYAxis[yIndex]), IndexType.HorizontalLeft);
-                }
-
-                xIndexCopy = xIndex;
-
-                if (xIndex != CommonVariables.LastIndexOfX_Y_Axis)
-                {
-                    xIndexCopy++;
-                    _secondPlayerNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndexCopy], CommonVariables.DefaultYAxis[yIndex]), IndexType.HorizontalRight);
-                }
+        private void TryToAddPointToNextProbablyPointsForFirstPlayer(IndexType indexType, int xIndex, int yIndex)
+        {
+            if (yIndex != CommonVariables.FirstIndexOfX_Y_Axis && yIndex != CommonVariables.LastIndexOfX_Y_Axis && xIndex != CommonVariables.FirstIndexOfX_Y_Axis && xIndex != CommonVariables.LastIndexOfX_Y_Axis)
+            {
+                DecrementOrIncrementIndex(indexType, xIndex, yIndex, out xIndex, out yIndex);
+                _firstPlayerNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), indexType);
             }
         }
 
-        private void UpdateDictionaries(bool playerTurn)
+        private void TryToAddPointToNextProbablyPointsForSecondPlayer(IndexType indexType, int xIndex, int yIndex)
         {
-            IndexType indexType;
-            int xIndex = Array.IndexOf(CommonVariables.DefaultXAxis, _lastPoint.Item1);
-            int yIndex = Array.IndexOf(CommonVariables.DefaultYAxis, _lastPoint.Item2);
-            if (playerTurn)
+            if (yIndex != CommonVariables.FirstIndexOfX_Y_Axis && yIndex != CommonVariables.LastIndexOfX_Y_Axis && xIndex != CommonVariables.FirstIndexOfX_Y_Axis && xIndex != CommonVariables.LastIndexOfX_Y_Axis)
             {
-                indexType = _firstPlaterNextProbablyPoints[_lastPoint];
-                switch (indexType)
-                {
-                    case IndexType.VerticalDown:
-                        foreach (var item in _firstPlaterNextProbablyPoints.Where(i => i.Value == IndexType.HorizontalLeft || i.Value == IndexType.HorizontalRight))
-                        {
-                            _firstPlaterNextProbablyPoints.Remove(item.Key);
-                        }
-
-                        if (yIndex != CommonVariables.FirstIndexOfX_Y_Axis)
-                        {
-                            yIndex--;
-                            _firstPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.VerticalDown);
-                        }
-                        break;
-                    case IndexType.VerticalUp:
-                        foreach (var item in _firstPlaterNextProbablyPoints.Where(i => i.Value == IndexType.HorizontalLeft || i.Value == IndexType.HorizontalRight))
-                        {
-                            _firstPlaterNextProbablyPoints.Remove(item.Key);
-                        }
-
-                        if (yIndex != CommonVariables.LastIndexOfX_Y_Axis)
-                        {
-                            yIndex++;
-                            _firstPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.VerticalUp);
-                        }
-                        break;
-                    case IndexType.HorizontalLeft:
-                        foreach (var item in _firstPlaterNextProbablyPoints.Where(i => i.Value == IndexType.VerticalDown || i.Value == IndexType.VerticalUp))
-                        {
-                            _firstPlaterNextProbablyPoints.Remove(item.Key);
-                        }
-
-                        if (xIndex != CommonVariables.FirstIndexOfX_Y_Axis)
-                        {
-                            xIndex--;
-                            _firstPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.HorizontalLeft);
-                        }
-
-                        break;
-                    case IndexType.HorizontalRight:
-                        foreach (var item in _firstPlaterNextProbablyPoints.Where(i => i.Value == IndexType.VerticalDown || i.Value == IndexType.VerticalUp))
-                        {
-                            _firstPlaterNextProbablyPoints.Remove(item.Key);
-                        }
-
-                        if (xIndex != CommonVariables.LastIndexOfX_Y_Axis)
-                        {
-                            xIndex++;
-                            _firstPlaterNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.HorizontalRight);
-                        }
-                        break;
-                }
-                _firstPlaterNextProbablyPoints.Remove(_lastPoint);
+                DecrementOrIncrementIndex(indexType, xIndex, yIndex, out xIndex, out yIndex);
+                _secondPlayerNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), indexType);
             }
-            else
+        }
+
+        private void FindIndexes(out int xIndex, out int yIndex)
+        {
+            xIndex = Array.IndexOf(CommonVariables.DefaultXAxis, _lastPoint.Item1);
+            yIndex = Array.IndexOf(CommonVariables.DefaultYAxis, _lastPoint.Item2);
+        }
+
+        private void DecrementOrIncrementIndex(IndexType indexType, int xIndex, int yIndex, out int newXIndex, out int newYIndex)
+        {
+            switch (indexType)
             {
-                indexType = _secondPlayerNextProbablyPoints[_lastPoint];
-                switch (indexType)
-                {
-                    case IndexType.VerticalDown:
-                        foreach (var item in _secondPlayerNextProbablyPoints.Where(i => i.Value == IndexType.HorizontalLeft || i.Value == IndexType.HorizontalRight))
-                        {
-                            _secondPlayerNextProbablyPoints.Remove(item.Key);
-                        }
-
-                        if (yIndex != CommonVariables.FirstIndexOfX_Y_Axis)
-                        {
-                            yIndex--;
-                            _secondPlayerNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.VerticalDown);
-                        }
-                        break;
-                    case IndexType.VerticalUp:
-                        foreach (var item in _secondPlayerNextProbablyPoints.Where(i => i.Value == IndexType.HorizontalLeft || i.Value == IndexType.HorizontalRight))
-                        {
-                            _secondPlayerNextProbablyPoints.Remove(item.Key);
-                        }
-
-                        if (yIndex != CommonVariables.LastIndexOfX_Y_Axis)
-                        {
-                            yIndex++;
-                            _secondPlayerNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.VerticalUp);
-                        }
-                        break;
-                    case IndexType.HorizontalLeft:
-                        foreach (var item in _secondPlayerNextProbablyPoints.Where(i => i.Value == IndexType.VerticalDown || i.Value == IndexType.VerticalUp))
-                        {
-                            _secondPlayerNextProbablyPoints.Remove(item.Key);
-                        }
-
-                        if (xIndex != CommonVariables.FirstIndexOfX_Y_Axis)
-                        {
-                            xIndex--;
-                            _secondPlayerNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.HorizontalLeft);
-                        }
-
-                        break;
-                    case IndexType.HorizontalRight:
-                        foreach (var item in _secondPlayerNextProbablyPoints.Where(i => i.Value == IndexType.VerticalDown || i.Value == IndexType.VerticalUp))
-                        {
-                            _secondPlayerNextProbablyPoints.Remove(item.Key);
-                        }
-
-                        if (xIndex != CommonVariables.LastIndexOfX_Y_Axis)
-                        {
-                            xIndex++;
-                            _secondPlayerNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), IndexType.HorizontalRight);
-                        }
-                        break;
-                }
-                _secondPlayerNextProbablyPoints.Remove(_lastPoint);
+                case IndexType.VerticalDown:
+                    yIndex--;
+                    break;
+                case IndexType.VerticalUp:
+                    yIndex++;
+                    break;
+                case IndexType.HorizontalLeft:
+                    xIndex--;
+                    break;
+                case IndexType.HorizontalRight:
+                    xIndex++;
+                    break;
             }
+            newXIndex = xIndex;
+            newYIndex = yIndex;
         }
     }
 }

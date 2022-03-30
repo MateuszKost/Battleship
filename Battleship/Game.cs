@@ -6,9 +6,12 @@ namespace Battleship
     {
         internal static void Start()
         {
-            Player playerOne = Player.CreatePlayer("First player");
+            CreationAlgorithm creationAlgorithm = new CreationAlgorithm();
+            //Player playerOne = Player.CreatePlayer("First player");
+            Player playerOne = creationAlgorithm.CreatePlayer("First player");
             Console.WriteLine("Created {0}", playerOne.NickName);
-            Player playerTwo = Player.CreatePlayer("Second player");
+            //Player playerTwo = Player.CreatePlayer("Second player");
+            Player playerTwo = creationAlgorithm.CreatePlayer("Second player");
             Console.WriteLine("Created {0}", playerTwo.NickName);
             Console.WriteLine();
             Console.WriteLine();
