@@ -50,7 +50,7 @@ namespace Battleship
                     ships.Add(ship);
                     ownMap = ActualizeMap(ownMap, shipPoints);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Console.WriteLine(ex.Message);
                 }
@@ -231,11 +231,26 @@ namespace Battleship
 
         private bool CheckIfBreakLoopNeeded(int index, Point[] ownMap, int? x = null, char? y = null)
         {
-            if(index < CommonVariables.FirstIndexOfX_Y_Axis || index > CommonVariables.LastIndexOfX_Y_Axis)
+            if (index < CommonVariables.FirstIndexOfX_Y_Axis || index > CommonVariables.LastIndexOfX_Y_Axis)
             {
-                return true; 
+                return true;
             }
-            return x == null && y != null ? CheckStatus(CommonVariables.DefaultXAxis[index], y.Value, ownMap) : CheckStatus(x.Value, CommonVariables.DefaultYAxis[index], ownMap);
+
+            if (x == null && y != null)
+            {
+                return CheckStatus(CommonVariables.DefaultXAxis[index], y.Value, ownMap);
+            }
+            else
+            {
+                if (x != null)
+                {
+                    return CheckStatus(x.Value, CommonVariables.DefaultYAxis[index], ownMap);
+                }
+                else
+                {
+                    return true;
+                }
+            }
         }
 
         private bool CheckStatus(int x, char y, Point[] ownMap)
