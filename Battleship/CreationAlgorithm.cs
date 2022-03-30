@@ -41,12 +41,19 @@ namespace Battleship
         {
             foreach (var shipName in Enum.GetNames(typeof(ShipType)))
             {
-                ShipType shipType = (ShipType)Enum.Parse(typeof(ShipType), shipName);
-                IEnumerable<Point> shipPoints = CreateShipPoints(ownMap, (int)shipType);
-                Ship ship = Ship.CreateShip(shipName, (int)shipType, shipPoints.ToList());
+                try
+                {
+                    ShipType shipType = (ShipType)Enum.Parse(typeof(ShipType), shipName);
+                    IEnumerable<Point> shipPoints = CreateShipPoints(ownMap, (int)shipType);
+                    Ship ship = Ship.CreateShip(shipName, (int)shipType, shipPoints.ToList());
 
-                ships.Add(ship);
-                ownMap = ActualizeMap(ownMap, shipPoints);
+                    ships.Add(ship);
+                    ownMap = ActualizeMap(ownMap, shipPoints);
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
             }
             actualizedMap = ownMap;
             shipsFilled = ships;

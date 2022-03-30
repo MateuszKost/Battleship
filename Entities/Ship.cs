@@ -28,7 +28,7 @@ namespace MainObjects
         {
             if (points == null)
             {
-                //throw exeption
+                throw new ArgumentNullException(nameof(points));
             }
 
             return new Ship(shipName, shipSize, points);
