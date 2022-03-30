@@ -224,7 +224,11 @@ namespace Battleship
 
         private bool CheckIfBreakLoopNeeded(int index, Point[] ownMap, int? x = null, char? y = null)
         {
-            return x == null && y != null ? CheckStatus(CommonVariables.DefaultXAxis[index], y.Value, ownMap) : CheckStatus(x.Value, CommonVariables.DefaultYAxis[index], ownMap); // index = -1 problem
+            if(index < CommonVariables.FirstIndexOfX_Y_Axis || index > CommonVariables.LastIndexOfX_Y_Axis)
+            {
+                return true; 
+            }
+            return x == null && y != null ? CheckStatus(CommonVariables.DefaultXAxis[index], y.Value, ownMap) : CheckStatus(x.Value, CommonVariables.DefaultYAxis[index], ownMap);
         }
 
         private bool CheckStatus(int x, char y, Point[] ownMap)
