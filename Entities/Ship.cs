@@ -24,12 +24,11 @@ namespace MainObjects
             Points = points;
         }
 
-        internal static Ship CreateShip(string shipName, int shipSize, List<Point>? points = null)
+        public static Ship CreateShip(string shipName, int shipSize, List<Point> points)
         {
             if (points == null)
             {
                 //throw exeption
-                points = new List<Point>();
             }
 
             return new Ship(shipName, shipSize, points);

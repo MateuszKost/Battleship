@@ -17,5 +17,11 @@
         public static readonly IEnumerable<int> Arrangement = new List<int> { Horizontal, Vertical };
         public static readonly IEnumerable<int> Order = new List<int> { Previous, Next };
         public static readonly IEnumerable<bool> Players = new List<bool> { FirstPlayer, SecondPlayer };
+
+        public static readonly string Hitted = "Trafiono";
+        public static readonly string Missed = "Pudlo";
+        public static readonly string ShootedPointInPlace = "Oddano strzał w {0}{1}";
+        public static readonly string ShipWithNumberSunk = "{0} gracza {1} został zatopiony";
+        public static readonly string PlayerWithNumberLost = "Gracz {0} przegrał gre";
     }
 }
