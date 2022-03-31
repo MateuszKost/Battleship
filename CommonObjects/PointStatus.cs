@@ -4,7 +4,7 @@
     {
         Free,
         Taken,
-        Hitted,
+        Hit,
         Missed,
         Sunk
     }
