@@ -6,26 +6,27 @@ namespace Battleship
     internal class SimulationAlgorithm
     {
         private readonly Random _random = new Random();
-        private readonly Dictionary<ValueTuple<int, char>, IndexType> _firstPlayerLastHittedPoints;
+        private readonly ICollection<ValueTuple<int, char>> _firstPlayerPointsToShoot;
+        private readonly ICollection<ValueTuple<int, char>> _firstPlayerLastHittedPoints;
+        private readonly ICollection<ValueTuple<int, char>> _secondPlayerPointsToShoot;
+        private readonly ICollection<ValueTuple<int, char>> _secondPlayerLastHittedPoints;
         private readonly Dictionary<ValueTuple<int, char>, IndexType> _firstPlayerNextProbablyPoints;
-        private readonly Dictionary<ValueTuple<int, char>, IndexType> _firstPlayerPointsToShoot;
-        private readonly Dictionary<ValueTuple<int, char>, IndexType> _secondPlayerLastHittedPoints;
         private readonly Dictionary<ValueTuple<int, char>, IndexType> _secondPlayerNextProbablyPoints;
-        private readonly Dictionary<ValueTuple<int, char>, IndexType> _secondPlayerPointsToShoot;
         private ValueTuple<int, char> _lastPoint = ValueTuple.Create(int.MinValue, char.MinValue);
 
         public SimulationAlgorithm()
         {
-            _firstPlayerLastHittedPoints = new Dictionary<ValueTuple<int, char>, IndexType>();
+            _firstPlayerPointsToShoot = new List<ValueTuple<int, char>>();
+            _firstPlayerLastHittedPoints = new List<ValueTuple<int, char>>();
+            _secondPlayerPointsToShoot = new List<ValueTuple<int, char>>();
+            _secondPlayerLastHittedPoints = new List<ValueTuple<int, char>>();
             _firstPlayerNextProbablyPoints = new Dictionary<ValueTuple<int, char>, IndexType>();
-            _secondPlayerLastHittedPoints = new Dictionary<ValueTuple<int, char>, IndexType>();
-            _secondPlayerNextProbablyPoints = new Dictionary<ValueTuple<int, char>, IndexType>();
-            _firstPlayerPointsToShoot = new Dictionary<(int, char), IndexType>();
-            _secondPlayerPointsToShoot = new Dictionary<(int, char), IndexType>();
+            _secondPlayerNextProbablyPoints = new Dictionary<ValueTuple<int, char>, IndexType> ();
         }
 
         internal void Start(Player playerOne, Player playerTwo)
         {
+            PointStatus pointStatus;
             bool playerTurn;
             FillDictionaries();
 
@@ -40,9 +41,7 @@ namespace Battleship
                 Console.WriteLine(CommonVariables.SecondPlayerStartsTheGame);
             }
 
-            PointStatus pointStatus = PointStatus.Free;
-
-            pointStatus = ShootAndCheckIfHitted(playerOne, playerTwo, playerTurn, pointStatus);
+            pointStatus = ShootAndCheckIfHitted(playerOne, playerTwo, playerTurn);
 
             while (playerOne.Ships.Count != CommonVariables.Zero && playerTwo.Ships.Count != CommonVariables.Zero)
             {
@@ -54,7 +53,7 @@ namespace Battleship
                     else
                         Console.WriteLine(CommonVariables.SecondPlayerTurn);
                 }
-                pointStatus = ShootAndCheckIfHitted(playerOne, playerTwo, playerTurn, pointStatus);
+                pointStatus = ShootAndCheckIfHitted(playerOne, playerTwo, playerTurn);
             }
         }
 
@@ -64,23 +63,24 @@ namespace Battleship
             {
                 foreach (int x in CommonVariables.DefaultXAxis)
                 {
-                    _firstPlayerPointsToShoot.Add((x, y), IndexType.Default);
-                    _secondPlayerPointsToShoot.Add((x, y), IndexType.Default);
+                    _firstPlayerPointsToShoot.Add(ValueTuple.Create(x, y));
+                    _secondPlayerPointsToShoot.Add(ValueTuple.Create(x, y));
                 }
             }
         }
 
-        private PointStatus ShootAndCheckIfHitted(Player playerOne, Player playerTwo, bool playerTurn, PointStatus pointStatus)
+        private PointStatus ShootAndCheckIfHitted(Player playerOne, Player playerTwo, bool playerTurn)
         {
+            PointStatus pointStatus;
             if (playerTurn)
             {
-                pointStatus = FirstPlayerShot(playerOne, playerTwo, playerTurn, pointStatus);
+                pointStatus = FirstPlayerShot(playerOne, playerTwo);
                 pointStatus = CheckIfShotHittedForFirstPlayer(playerOne, playerTwo, pointStatus);
                 CheckPointStatusForFirstPlayer(pointStatus);
             }
             else
             {
-                pointStatus = SecondPlayerShot(playerOne, playerTwo, playerTurn, pointStatus);
+                pointStatus = SecondPlayerShot(playerOne, playerTwo);
                 pointStatus = CheckIfShotHittedForSecondPlayer(playerOne, playerTwo, pointStatus);
                 CheckPointStatusForSecondPlayer(pointStatus);
             }
@@ -88,14 +88,14 @@ namespace Battleship
             return pointStatus;
         }
 
-        private PointStatus FirstPlayerShot(Player playerOne, Player playerTwo, bool playerTurn, PointStatus pointStatus)
+        private PointStatus FirstPlayerShot(Player playerOne, Player playerTwo)
         {
             ValueTuple<int, char> point = CreatePointForFirstPlayer();
             _lastPoint = point;
             return playerOne.Shot(point, playerTwo.Ships);
         }
 
-        private PointStatus SecondPlayerShot(Player playerOne, Player playerTwo, bool playerTurn, PointStatus pointStatus)
+        private PointStatus SecondPlayerShot(Player playerOne, Player playerTwo)
         {
             ValueTuple<int, char> point = CreatePointForSecondPlayer();
             _lastPoint = point;
@@ -109,7 +109,7 @@ namespace Battleship
             {
                 return CreateNewPointForFirstPlayer();
             }
-            while (_firstPlayerLastHittedPoints.ContainsKey(_firstPlayerNextProbablyPoints.ElementAt(index).Key))
+            while (_firstPlayerLastHittedPoints.Contains(_firstPlayerNextProbablyPoints.ElementAt(index).Key))
             {
                 _firstPlayerNextProbablyPoints.Remove(_firstPlayerNextProbablyPoints.ElementAt(index).Key);
                 if (_firstPlayerNextProbablyPoints.Count == CommonVariables.Zero)
@@ -128,7 +128,7 @@ namespace Battleship
             {
                 return CreateNewPointForSecondPlayer();
             }
-            while (_secondPlayerLastHittedPoints.ContainsKey(_secondPlayerNextProbablyPoints.ElementAt(index).Key))
+            while (_secondPlayerLastHittedPoints.Contains(_secondPlayerNextProbablyPoints.ElementAt(index).Key))
             {
                 _secondPlayerNextProbablyPoints.Remove(_secondPlayerNextProbablyPoints.ElementAt(index).Key);
                 if (_secondPlayerNextProbablyPoints.Count == CommonVariables.Zero)
@@ -142,10 +142,10 @@ namespace Battleship
 
         private ValueTuple<int, char> CreateNewPointForFirstPlayer()
         {
-            ValueTuple<int, char> result = _firstPlayerPointsToShoot.ElementAt(_random.Next(_firstPlayerPointsToShoot.Count)).Key;
-            while (_firstPlayerLastHittedPoints.ContainsKey(result))
+            ValueTuple<int, char> result = _firstPlayerPointsToShoot.ElementAt(_random.Next(_firstPlayerPointsToShoot.Count));
+            while (_firstPlayerLastHittedPoints.Contains(result))
             {
-                result = _firstPlayerPointsToShoot.ElementAt(_random.Next(_firstPlayerPointsToShoot.Count)).Key;
+                result = _firstPlayerPointsToShoot.ElementAt(_random.Next(_firstPlayerPointsToShoot.Count));
             }
             _firstPlayerPointsToShoot.Remove(result);
             return result;
@@ -153,10 +153,10 @@ namespace Battleship
 
         private ValueTuple<int, char> CreateNewPointForSecondPlayer()
         {
-            ValueTuple<int, char> result = _secondPlayerPointsToShoot.ElementAt(_random.Next(_secondPlayerPointsToShoot.Count)).Key;
-            while (_secondPlayerLastHittedPoints.ContainsKey(result))
+            ValueTuple<int, char> result = _secondPlayerPointsToShoot.ElementAt(_random.Next(_secondPlayerPointsToShoot.Count));
+            while (_secondPlayerLastHittedPoints.Contains(result))
             {
-                result = _secondPlayerPointsToShoot.ElementAt(_random.Next(_secondPlayerPointsToShoot.Count)).Key;
+                result = _secondPlayerPointsToShoot.ElementAt(_random.Next(_secondPlayerPointsToShoot.Count));
             }
             _secondPlayerPointsToShoot.Remove(result);
             return result;
@@ -195,18 +195,18 @@ namespace Battleship
             switch (pointStatus)
             {
                 case PointStatus.Missed:
-                    _firstPlayerLastHittedPoints.Add(_lastPoint, IndexType.Default);
+                    _firstPlayerLastHittedPoints.Add(_lastPoint);
                     if (_firstPlayerNextProbablyPoints.Any())
                     {
                         CheckDictionariesForFirstPlayer();
                     }
                     break;
                 case PointStatus.Hitted:
-                    _firstPlayerLastHittedPoints.Add(_lastPoint, IndexType.Default);
+                    _firstPlayerLastHittedPoints.Add(_lastPoint);
                     CheckDictionariesForFirstPlayer();
                     break;
                 case PointStatus.Sunk:
-                    _firstPlayerLastHittedPoints.Add(_lastPoint, IndexType.Default);
+                    _firstPlayerLastHittedPoints.Add(_lastPoint);
                     _firstPlayerNextProbablyPoints.Clear();
                     break;
             }
@@ -217,18 +217,18 @@ namespace Battleship
             switch (pointStatus)
             {
                 case PointStatus.Missed:
-                    _secondPlayerLastHittedPoints.Add(_lastPoint, IndexType.Default);
+                    _secondPlayerLastHittedPoints.Add(_lastPoint);
                     if (_secondPlayerNextProbablyPoints.Any())
                     {
                         CheckDictionariesForSecondPlayer();
                     }
                     break;
                 case PointStatus.Hitted:
-                    _secondPlayerLastHittedPoints.Add(_lastPoint, IndexType.Default);
+                    _secondPlayerLastHittedPoints.Add(_lastPoint);
                     CheckDictionariesForSecondPlayer();
                     break;
                 case PointStatus.Sunk:
-                    _secondPlayerLastHittedPoints.Add(_lastPoint, IndexType.Default);
+                    _secondPlayerLastHittedPoints.Add(_lastPoint);
                     _secondPlayerNextProbablyPoints.Clear();
                     break;
             }
