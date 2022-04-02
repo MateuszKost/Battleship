@@ -3,12 +3,12 @@ using MainObjects;
 
 namespace Battleship
 {
-    internal class CreationAlgorithm
+    public class CreationAlgorithm
     {
         private readonly Random _random = new Random();
         private bool _guard = false;
 
-        internal Player CreatePlayer(string firstPlayerName)
+        public Player CreatePlayer(string firstPlayerName)
         {
             Point[] ownMap = new Point[CommonVariables.DefaultMapSize];
             Point[] enemyMap = new Point[CommonVariables.DefaultMapSize];

@@ -15,7 +15,7 @@ namespace MainObjects
         public string NickName { get; init; }
         public List<Ship> Ships { get; init; }
         public Point[] OwnMap { get; set; }
-        public Point[] EnemyMap { get; set; }
+        private Point[] EnemyMap { get; set; }
 
         private Player(string nickName, List<Ship> ships, Point[] ownMap, Point[] enemyMap)
         {
