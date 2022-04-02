@@ -7,21 +7,21 @@ namespace Battleship
     {
         private readonly Random _random = new Random();
         private bool _guard = false;
+        private ExtraPoint[] ownMap;
+        private ExtraPoint[] enemyMap;
 
         public Player CreatePlayer(string firstPlayerName)
         {
-            ExtraPoint[] ownMap = new ExtraPoint[CommonVariables.DefaultMapSize];
-            ExtraPoint[] enemyMap = new ExtraPoint[CommonVariables.DefaultMapSize];
+            ownMap = new ExtraPoint[CommonVariables.DefaultMapSize];
+            enemyMap = new ExtraPoint[CommonVariables.DefaultMapSize];
 
-            FillMaps(ownMap, enemyMap, out ownMap, out enemyMap);
+            FillMaps();
 
-            CreateShips(new List<Ship>(), ownMap, out List<Ship> ships, out ownMap);
-
-            return Player.CreatePlayer(firstPlayerName, ships, ownMap, enemyMap);
+            return Player.CreatePlayer(firstPlayerName, CreateShips(), ownMap, enemyMap);
         }
 
         #region private functions
-        private static void FillMaps(ExtraPoint[] ownMap, ExtraPoint[] enemyMap, out ExtraPoint[] filledOwnMap, out ExtraPoint[] filledEnemyMap)
+        private void FillMaps()
         {
             int index = CommonVariables.FirstIndexOfX_Y_Axis;
             foreach (char y in CommonVariables.DefaultYAxis)
@@ -33,35 +33,33 @@ namespace Battleship
                     index++;
                 }
             }
-            filledOwnMap = ownMap;
-            filledEnemyMap = enemyMap;
         }
 
-        private void CreateShips(List<Ship> ships, ExtraPoint[] ownMap, out List<Ship> shipsFilled, out ExtraPoint[] actualizedMap)
+        private List<Ship> CreateShips()
         {
+            List<Ship> ships = new List<Ship>();
             foreach (var shipName in Enum.GetNames(typeof(ShipType)))
             {
                 try
                 {
                     ShipType shipType = (ShipType)Enum.Parse(typeof(ShipType), shipName);
-                    IEnumerable<ExtraPoint> shipPoints = CreateShipPoints(ownMap, (int)shipType);
-                    Ship ship = Ship.CreateShip(shipName, shipPoints.ToList());
+                    ICollection<ExtraPoint> shipPoints = CreateShipPoints((int)shipType);
+                    Ship ship = Ship.CreateShip(shipName, shipPoints);
 
                     ships.Add(ship);
-                    ownMap = ActualizeMap(ownMap, shipPoints);
+                    ActualizeMap(shipPoints);
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex.Message);
                 }
             }
-            actualizedMap = ownMap;
-            shipsFilled = ships;
+            return ships;
         }
 
-        private IEnumerable<ExtraPoint> CreateShipPoints(ExtraPoint[] ownMap, int shipLength)
+        private ICollection<ExtraPoint> CreateShipPoints(int shipLength)
         {
-            IEnumerable<ExtraPoint>? shipPoints;
+            ICollection<ExtraPoint>? shipPoints;
             CreateRandomPoint(out int xIndex, out int yIndex);
 
             int x = CommonVariables.DefaultXAxis[xIndex];
@@ -71,16 +69,16 @@ namespace Battleship
 
             if (ownMap.Single(p => p.Point.X == startPoint.Point.X && p.Point.Y == startPoint.Point.Y).Status == PointStatus.Free)
             {
-                shipPoints = FindOtherPointsPart1(startPoint, shipLength, ownMap);
+                shipPoints = FindOtherPointsPart1(startPoint, shipLength);
                 if (shipPoints == null)
                 {
                     _guard = false;
-                    shipPoints = CreateShipPoints(ownMap, shipLength);
+                    shipPoints = CreateShipPoints(shipLength);
                 }
             }
             else
             {
-                shipPoints = CreateShipPoints(ownMap, shipLength);
+                shipPoints = CreateShipPoints(shipLength);
             }
 
             return shipPoints;
@@ -92,7 +90,7 @@ namespace Battleship
             yIndex = _random.Next(CommonVariables.DefaultYAxis.Length);
         }
 
-        private ICollection<ExtraPoint>? FindOtherPointsPart1(ExtraPoint startPoint, int shipLength, ExtraPoint[] ownMap, int? arrangementChanged = null)
+        private ICollection<ExtraPoint>? FindOtherPointsPart1(ExtraPoint startPoint, int shipLength, int? arrangementChanged = null)
         {
             int arrangement;
 
@@ -107,15 +105,15 @@ namespace Battleship
 
             if (arrangement == CommonVariables.Horizontal)
             {
-                return FindOtherPointsPart2(startPoint, shipLength, ownMap, arrangement, null, startPoint.Point.Y);
+                return FindOtherPointsPart2(startPoint, shipLength, arrangement, null, startPoint.Point.Y);
             }
             else // Vertical arrangement
             {
-                return FindOtherPointsPart2(startPoint, shipLength, ownMap, arrangement, startPoint.Point.X);
+                return FindOtherPointsPart2(startPoint, shipLength, arrangement, startPoint.Point.X);
             }
         }
 
-        private ICollection<ExtraPoint>? FindOtherPointsPart2(ExtraPoint startPoint, int shipLength, ExtraPoint[] ownMap, int arrangement, int? x = null, char? y = null)
+        private ICollection<ExtraPoint>? FindOtherPointsPart2(ExtraPoint startPoint, int shipLength, int arrangement, int? x = null, char? y = null)
         {
             bool breakLoop = false;
             int minimalIndex, maximalIndex, index;
@@ -148,22 +146,22 @@ namespace Battleship
                 switch (indexType)
                 {
                     case IndexType.Lower:
-                        Decrement(minimalIndex, ownMap, out minimalIndex, out breakLoop, x, y);
+                        Decrement(minimalIndex, out minimalIndex, out breakLoop, x, y);
                         index = minimalIndex;
                         break;
                     case IndexType.Higher:
-                        Increment(maximalIndex, ownMap, out maximalIndex, out breakLoop, x, y);
+                        Increment(maximalIndex, out maximalIndex, out breakLoop, x, y);
                         index = maximalIndex;
                         break;
                     case IndexType.Default:
                         int previousOrNext = _random.Next(CommonVariables.Order.Count());
                         if (previousOrNext == CommonVariables.Previous)
                         {
-                            Decrement(minimalIndex, ownMap, out minimalIndex, out breakLoop, x, y);
+                            Decrement(minimalIndex, out minimalIndex, out breakLoop, x, y);
                             index = minimalIndex;
                             if (breakLoop)
                             {
-                                Increment(maximalIndex, ownMap, out maximalIndex, out breakLoop, x, y);
+                                Increment(maximalIndex, out maximalIndex, out breakLoop, x, y);
                                 index = maximalIndex;
                             }
 
@@ -171,11 +169,11 @@ namespace Battleship
                         }
                         else if (previousOrNext == CommonVariables.Next)
                         {
-                            Increment(maximalIndex, ownMap, out maximalIndex, out breakLoop, x, y);
+                            Increment(maximalIndex, out maximalIndex, out breakLoop, x, y);
                             index = maximalIndex;
                             if (breakLoop)
                             {
-                                Decrement(minimalIndex, ownMap, out minimalIndex, out breakLoop, x, y);
+                                Decrement(minimalIndex, out minimalIndex, out breakLoop, x, y);
                                 index = minimalIndex;
                             }
                             indexes.Add(index);
@@ -193,7 +191,7 @@ namespace Battleship
                     {
                         _guard = true;
                         arrangement = arrangement == CommonVariables.Horizontal ? CommonVariables.Vertical : CommonVariables.Horizontal;
-                        points = FindOtherPointsPart1(startPoint, shipLength, ownMap, arrangement);
+                        points = FindOtherPointsPart1(startPoint, shipLength, arrangement);
                     }
                     break;
                 }
@@ -215,21 +213,21 @@ namespace Battleship
             return points;
         }
 
-        private void Increment(int index, ExtraPoint[] ownMap, out int indexIncremented, out bool breakLoop, int? x = null, char? y = null)
+        private void Increment(int index, out int indexIncremented, out bool breakLoop, int? x = null, char? y = null)
         {
             index++;
             indexIncremented = index;
-            breakLoop = CheckIfBreakLoopNeeded(indexIncremented, ownMap, x, y);
+            breakLoop = CheckIfBreakLoopNeeded(indexIncremented, x, y);
         }
 
-        private void Decrement(int index, ExtraPoint[] ownMap, out int indexDecremented, out bool breakLoop, int? x = null, char? y = null)
+        private void Decrement(int index, out int indexDecremented, out bool breakLoop, int? x = null, char? y = null)
         {
             index--;
             indexDecremented = index;
-            breakLoop = CheckIfBreakLoopNeeded(indexDecremented, ownMap, x, y);
+            breakLoop = CheckIfBreakLoopNeeded(indexDecremented, x, y);
         }
 
-        private bool CheckIfBreakLoopNeeded(int index, ExtraPoint[] ownMap, int? x = null, char? y = null)
+        private bool CheckIfBreakLoopNeeded(int index, int? x = null, char? y = null)
         {
             if (index < CommonVariables.FirstIndexOfX_Y_Axis || index > CommonVariables.LastIndexOfX_Y_Axis)
             {
@@ -238,13 +236,13 @@ namespace Battleship
 
             if (x == null && y != null)
             {
-                return CheckStatus(CommonVariables.DefaultXAxis[index], y.Value, ownMap);
+                return CheckStatus(CommonVariables.DefaultXAxis[index], y.Value);
             }
             else
             {
                 if (x != null)
                 {
-                    return CheckStatus(x.Value, CommonVariables.DefaultYAxis[index], ownMap);
+                    return CheckStatus(x.Value, CommonVariables.DefaultYAxis[index]);
                 }
                 else
                 {
@@ -253,16 +251,9 @@ namespace Battleship
             }
         }
 
-        private bool CheckStatus(int x, char y, ExtraPoint[] ownMap)
+        private bool CheckStatus(int x, char y)
         {
-            if (ownMap.Single(p => p.Point.X == x && p.Point.Y == y).Status == PointStatus.Free)
-            {
-                return false;
-            }
-            else
-            {
-                return true;
-            }
+            return !(ownMap.Single(p => p.Point.X == x && p.Point.Y == y).Status == PointStatus.Free);
         }
 
         private IndexType CheckIndexes(IEnumerable<int> indexes)
@@ -283,18 +274,14 @@ namespace Battleship
             return indexType;
         }
 
-        private ExtraPoint[] ActualizeMap(ExtraPoint[] ownMap, IEnumerable<ExtraPoint> shipPoints)
+        private void ActualizeMap(IEnumerable<ExtraPoint> shipPoints)
         {
-            //Should it work?
             foreach (ExtraPoint point in shipPoints)
             {
                 ExtraPoint tmp = ownMap.Single(p => p.Point.Y == point.Point.Y && p.Point.X == point.Point.X);
                 int index = Array.IndexOf(ownMap, tmp);
-                //ownMap.Single(p => p.Point.X == point.Point.X && p.Point.Y == point.Point.Y).Status = PointStatus.Taken;
                 ownMap[index].Status = PointStatus.Taken;
             }
-
-            return ownMap;
         }
         #endregion
     }
