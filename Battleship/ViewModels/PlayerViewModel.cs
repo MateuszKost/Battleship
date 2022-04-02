@@ -1,6 +1,6 @@
 ﻿using MainObjects;
 
-namespace BattlehipGame.Server.ViewModels
+namespace Battlehip.ViewModels
 {
     public class PlayerViewModel
     {

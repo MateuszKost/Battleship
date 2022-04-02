@@ -1,4 +1,4 @@
-﻿using BattlehipGame.Server.ViewModels;
+﻿using Battlehip.ViewModels;
 using Battleship;
 using MainObjects;
 using Microsoft.AspNetCore.Mvc;
@@ -20,9 +20,20 @@ namespace BattlehipGame.Server.Controllers
         [HttpGet("GetSimulationList")]
         public ActionResult<IEnumerable<ShootViewModel>> GetSimulationList()
         {
-            //execute simulation function
+            CreationAlgorithm creationAlgorithm = new CreationAlgorithm();
+            Player playerOne = creationAlgorithm.CreatePlayer("First player");
+            Console.WriteLine("Created {0}", playerOne.NickName);
+            Player playerTwo = creationAlgorithm.CreatePlayer("Second player");
+            Console.WriteLine("Created {0}", playerTwo.NickName);
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("Starting the simulation...");
 
-            return new List<ShootViewModel> { new ShootViewModel(ExtraPoint.CreateExtraPoint(Point.CreatePoint(1, 'a')), true), new ShootViewModel(ExtraPoint.CreateExtraPoint(Point.CreatePoint(1, 'b')), true), new ShootViewModel(ExtraPoint.CreateExtraPoint(Point.CreatePoint(2, 'c')), false) }; // to postman tests
+            SimulationAlgorithm simulation = new SimulationAlgorithm();
+            simulation.Start(playerOne, playerTwo);
+
+
+            return simulation.Start(playerOne, playerTwo);
         }
     }
 }

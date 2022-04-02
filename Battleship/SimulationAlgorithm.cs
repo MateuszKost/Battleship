@@ -1,9 +1,10 @@
-﻿using CommonObjects;
+﻿using Battlehip.ViewModels;
+using CommonObjects;
 using MainObjects;
 
 namespace Battleship
 {
-    internal class SimulationAlgorithm
+    public class SimulationAlgorithm
     {
         private readonly Random _random = new Random();
         private readonly PlayerPointsList _firstPlayerPointsToShoot;
@@ -12,6 +13,7 @@ namespace Battleship
         private readonly PlayerPointsList _secondPlayerLastHitPoints;
         private readonly PlayerPointsDictionary _firstPlayerNextProbablyPoints;
         private readonly PlayerPointsDictionary _secondPlayerNextProbablyPoints;
+        private readonly ICollection<ShootViewModel> _shootForApi;
         private Point _lastPoint = Point.CreatePoint(int.MinValue, char.MinValue);
 
         public SimulationAlgorithm()
@@ -22,9 +24,10 @@ namespace Battleship
             _secondPlayerLastHitPoints = new PlayerPointsList();
             _firstPlayerNextProbablyPoints = new PlayerPointsDictionary();
             _secondPlayerNextProbablyPoints = new PlayerPointsDictionary();
+            _shootForApi = new List<ShootViewModel>();
         }
 
-        internal void Start(Player playerOne, Player playerTwo)
+        public ICollection<ShootViewModel> Start(Player playerOne, Player playerTwo)
         {
             PointStatus pointStatus;
             bool playerTurn;
@@ -55,6 +58,7 @@ namespace Battleship
                 }
                 pointStatus = ShootAndCheckIfHit(playerOne, playerTwo, playerTurn);
             }
+            return _shootForApi;
         }
 
         private void FillDictionaries()
@@ -76,13 +80,13 @@ namespace Battleship
             {
                 pointStatus = FirstPlayerShoot(playerOne, playerTwo);
                 pointStatus = CheckIfShotHitForFirstPlayer(playerOne, playerTwo, pointStatus);
-                _firstPlayerLastHitPoints.CheckPointStatusForPlayer(_firstPlayerNextProbablyPoints, pointStatus, _lastPoint);
+                _firstPlayerLastHitPoints.CheckPointStatusForPlayer(_firstPlayerNextProbablyPoints, _shootForApi, pointStatus, _lastPoint, playerTurn);
             }
             else
             {
                 pointStatus = SecondPlayerShoot(playerOne, playerTwo);
                 pointStatus = CheckIfShotHitForSecondPlayer(playerOne, playerTwo, pointStatus);
-                _secondPlayerLastHitPoints.CheckPointStatusForPlayer(_secondPlayerNextProbablyPoints, pointStatus, _lastPoint);
+                _secondPlayerLastHitPoints.CheckPointStatusForPlayer(_secondPlayerNextProbablyPoints, _shootForApi, pointStatus, _lastPoint, playerTurn);
             }
 
             return pointStatus;
@@ -101,7 +105,7 @@ namespace Battleship
             _lastPoint = point;
             return playerTwo.Shoot(point, playerOne.Ships);
         }
-        
+
         private PointStatus CheckIfShotHitForFirstPlayer(Player playerOne, Player playerTwo, PointStatus pointStatus)
         {
             switch (pointStatus)
@@ -128,6 +132,6 @@ namespace Battleship
                     return playerOne.UpdateOwnMap(_lastPoint);
             }
             return pointStatus;
-        }         
+        }
     }
 }

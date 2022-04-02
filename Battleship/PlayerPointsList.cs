@@ -1,4 +1,5 @@
-﻿using CommonObjects;
+﻿using Battlehip.ViewModels;
+using CommonObjects;
 using MainObjects;
 using System.Collections.Generic;
 
@@ -19,27 +20,27 @@ namespace Battleship
             return result;
         }
 
-        internal void CheckPointStatusForPlayer(PlayerPointsDictionary playerNextProbablyPoints, PointStatus pointStatus, Point _lastPoint)
+        internal void CheckPointStatusForPlayer(PlayerPointsDictionary playerNextProbablyPoints, ICollection<ShootViewModel> shootForApi, PointStatus pointStatus, Point _lastPoint, bool playerTurn)
         {
             switch (pointStatus)
             {
                 case PointStatus.Missed:
-                    this.Add(_lastPoint);
                     if (playerNextProbablyPoints.Any())
                     {
                         playerNextProbablyPoints.CheckDictionariesForPlayer(_lastPoint);
                     }
+                    shootForApi.Add(ShootViewModel.CreateShootViewModel(ExtraPoint.CreateExtraPoint(_lastPoint, pointStatus), playerTurn));
                     break;
                 case PointStatus.Hit:
-                    this.Add(_lastPoint);
                     playerNextProbablyPoints.CheckDictionariesForPlayer(_lastPoint);
+                    shootForApi.Add(ShootViewModel.CreateShootViewModel(ExtraPoint.CreateExtraPoint(_lastPoint, pointStatus), playerTurn));
                     break;
                 case PointStatus.Sunk:
-                    this.Add(_lastPoint);
                     playerNextProbablyPoints.Clear();
+                    shootForApi.Add(ShootViewModel.CreateShootViewModel(ExtraPoint.CreateExtraPoint(_lastPoint, pointStatus), playerTurn));
                     break;
             }
+            this.Add(_lastPoint);
         }
-
     }
 }
