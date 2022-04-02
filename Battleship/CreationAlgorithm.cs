@@ -7,17 +7,17 @@ namespace Battleship
     {
         private readonly Random _random = new Random();
         private bool _guard = false;
-        private ExtraPoint[] ownMap;
-        private ExtraPoint[] enemyMap;
+        private ExtraPoint[] _ownMap;
+        private ExtraPoint[] _enemyMap;
 
         public Player CreatePlayer(string firstPlayerName)
         {
-            ownMap = new ExtraPoint[CommonVariables.DefaultMapSize];
-            enemyMap = new ExtraPoint[CommonVariables.DefaultMapSize];
+            _ownMap = new ExtraPoint[CommonVariables.DefaultMapSize];
+            _enemyMap = new ExtraPoint[CommonVariables.DefaultMapSize];
 
             FillMaps();
 
-            return Player.CreatePlayer(firstPlayerName, CreateShips(), ownMap, enemyMap);
+            return Player.CreatePlayer(firstPlayerName, CreateShips(), _ownMap, _enemyMap);
         }
 
         #region private functions
@@ -28,8 +28,8 @@ namespace Battleship
             {
                 foreach (int x in CommonVariables.DefaultXAxis)
                 {
-                    ownMap[index] = ExtraPoint.CreatePoint(Point.CreatePoint(x, y));
-                    enemyMap[index] = ExtraPoint.CreatePoint(Point.CreatePoint(x, y));
+                    _ownMap[index] = ExtraPoint.CreatePoint(Point.CreatePoint(x, y));
+                    _enemyMap[index] = ExtraPoint.CreatePoint(Point.CreatePoint(x, y));
                     index++;
                 }
             }
@@ -67,7 +67,7 @@ namespace Battleship
 
             ExtraPoint startPoint = ExtraPoint.CreatePoint(Point.CreatePoint(x, y), PointStatus.Taken);
 
-            if (ownMap.Single(p => p.Point.X == startPoint.Point.X && p.Point.Y == startPoint.Point.Y).Status == PointStatus.Free)
+            if (_ownMap.Single(p => p.Point.X == startPoint.Point.X && p.Point.Y == startPoint.Point.Y).Status == PointStatus.Free)
             {
                 shipPoints = FindOtherPointsPart1(startPoint, shipLength);
                 if (shipPoints == null)
@@ -253,7 +253,7 @@ namespace Battleship
 
         private bool CheckStatus(int x, char y)
         {
-            return !(ownMap.Single(p => p.Point.X == x && p.Point.Y == y).Status == PointStatus.Free);
+            return !(_ownMap.Single(p => p.Point.X == x && p.Point.Y == y).Status == PointStatus.Free);
         }
 
         private IndexType CheckIndexes(IEnumerable<int> indexes)
@@ -278,9 +278,9 @@ namespace Battleship
         {
             foreach (ExtraPoint point in shipPoints)
             {
-                ExtraPoint tmp = ownMap.Single(p => p.Point.Y == point.Point.Y && p.Point.X == point.Point.X);
-                int index = Array.IndexOf(ownMap, tmp);
-                ownMap[index].Status = PointStatus.Taken;
+                ExtraPoint tmp = _ownMap.Single(p => p.Point.Y == point.Point.Y && p.Point.X == point.Point.X);
+                int index = Array.IndexOf(_ownMap, tmp);
+                _ownMap[index].Status = PointStatus.Taken;
             }
         }
         #endregion
