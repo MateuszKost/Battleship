@@ -30,9 +30,9 @@ namespace MainObjects
             return new Player(nickName, ships, ownMap, enemyMap);
         }
 
-        public PointStatus Shot(Point point, ICollection<Ship> ships)
+        public PointStatus Shoot(Point point, ICollection<Ship> ships)
         {
-            Console.WriteLine(CommonVariables.ShootedPointInPlace, point.X, point.Y);
+            Console.WriteLine(CommonVariables.ShotPointInPlace, point.X, point.Y);
             bool hit = ships.SelectMany(s => s.Points).Select(p => p.Point).Contains(point);
             if (hit)
             {

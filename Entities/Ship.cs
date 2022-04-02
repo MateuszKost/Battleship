@@ -6,7 +6,6 @@ namespace MainObjects
      * Ship - class for storing information about ship
      * 
      * ShipName - name of ship
-     * ShipSize - size of ship
      * Points - list of points for ship, depends on the ship type it got length form 2 to 5  
      */
     public class Ship

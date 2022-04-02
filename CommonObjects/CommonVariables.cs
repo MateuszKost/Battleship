@@ -20,7 +20,7 @@
 
         public static readonly string Hit = "Trafiono";
         public static readonly string Missed = "Pudlo";
-        public static readonly string ShootedPointInPlace = "Oddano strzał w {0}{1}";
+        public static readonly string ShotPointInPlace = "Oddano strzał w {0}{1}";
         public static readonly string ShipWithNumberSunk = "{0} gracza {1} został zatopiony";
         public static readonly string PlayerWithNumberLost = "Gracz {0} przegrał gre";
         public static readonly string FirstPlayerStartsTheGame = "Gracz pierwszy rozpoczyna gre!";

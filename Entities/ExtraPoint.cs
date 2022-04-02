@@ -3,10 +3,9 @@
 namespace MainObjects
 {
     /*
-     * Point - class for storing information about single point of ship length
+     * ExtraPoint - struct for storing information about single point and its  status
      * 
-     * X - like in coordinate system x value
-     * Y - like in coordinate system y value
+     * Point - ifnormations about it coordinates
      * Status - informing us about point status
      */
     public struct ExtraPoint
@@ -20,7 +19,7 @@ namespace MainObjects
             Status = pointStatus;
         }
 
-        public static ExtraPoint CreatePoint(Point point, PointStatus pointStatus = PointStatus.Free)
+        public static ExtraPoint CreateExtraPoint(Point point, PointStatus pointStatus = PointStatus.Free)
         {
             return new ExtraPoint(point, pointStatus);
         }

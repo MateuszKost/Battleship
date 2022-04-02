@@ -28,8 +28,8 @@ namespace Battleship
             {
                 foreach (int x in CommonVariables.DefaultXAxis)
                 {
-                    _ownMap[index] = ExtraPoint.CreatePoint(Point.CreatePoint(x, y));
-                    _enemyMap[index] = ExtraPoint.CreatePoint(Point.CreatePoint(x, y));
+                    _ownMap[index] = ExtraPoint.CreateExtraPoint(Point.CreatePoint(x, y));
+                    _enemyMap[index] = ExtraPoint.CreateExtraPoint(Point.CreatePoint(x, y));
                     index++;
                 }
             }
@@ -65,7 +65,7 @@ namespace Battleship
             int x = CommonVariables.DefaultXAxis[xIndex];
             char y = CommonVariables.DefaultYAxis[yIndex];
 
-            ExtraPoint startPoint = ExtraPoint.CreatePoint(Point.CreatePoint(x, y), PointStatus.Taken);
+            ExtraPoint startPoint = ExtraPoint.CreateExtraPoint(Point.CreatePoint(x, y), PointStatus.Taken);
 
             if (_ownMap.Single(p => p.Point.X == startPoint.Point.X && p.Point.Y == startPoint.Point.Y).Status == PointStatus.Free)
             {
@@ -199,12 +199,12 @@ namespace Battleship
                 {
                     if (arrangement == CommonVariables.Horizontal)
                     {
-                        points.Add(ExtraPoint.CreatePoint(Point.CreatePoint(CommonObjects.CommonVariables.DefaultXAxis[index], startPoint.Point.Y), PointStatus.Taken));
+                        points.Add(ExtraPoint.CreateExtraPoint(Point.CreatePoint(CommonObjects.CommonVariables.DefaultXAxis[index], startPoint.Point.Y), PointStatus.Taken));
 
                     }
                     else
                     {
-                        points.Add(ExtraPoint.CreatePoint(Point.CreatePoint(startPoint.Point.X, CommonObjects.CommonVariables.DefaultYAxis[index]), PointStatus.Taken));
+                        points.Add(ExtraPoint.CreateExtraPoint(Point.CreatePoint(startPoint.Point.X, CommonObjects.CommonVariables.DefaultYAxis[index]), PointStatus.Taken));
                     }
                 }
 
