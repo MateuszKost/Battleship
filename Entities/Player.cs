@@ -13,11 +13,11 @@ namespace MainObjects
     public class Player
     {
         public string NickName { get; init; }
-        public List<Ship> Ships { get; init; }
-        public Point[] OwnMap { get; set; }
-        private Point[] EnemyMap { get; set; }
+        public ICollection<Ship> Ships { get; init; }
+        public ExtraPoint[] OwnMap { get; set; }
+        private ExtraPoint[] EnemyMap { get; set; }
 
-        private Player(string nickName, List<Ship> ships, Point[] ownMap, Point[] enemyMap)
+        private Player(string nickName, ICollection<Ship> ships, ExtraPoint[] ownMap, ExtraPoint[] enemyMap)
         {
             NickName = nickName;
             Ships = ships;
@@ -25,15 +25,15 @@ namespace MainObjects
             EnemyMap = enemyMap;
         }
 
-        public static Player CreatePlayer(string nickName, List<Ship> ships, Point[] ownMap, Point[] enemyMap)
+        public static Player CreatePlayer(string nickName, ICollection<Ship> ships, ExtraPoint[] ownMap, ExtraPoint[] enemyMap)
         {
             return new Player(nickName, ships, ownMap, enemyMap);
         }
 
-        public PointStatus Shot(ValueTuple<int, char> point, IEnumerable<Ship> ships)
+        public PointStatus Shot(Point point, ICollection<Ship> ships)
         {
-            Console.WriteLine(CommonVariables.ShootedPointInPlace, point.Item1, point.Item2);
-            bool hit = ships.SelectMany(s => s.Points).SingleOrDefault(p => p.X == point.Item1 && p.Y == point.Item2) != null;
+            Console.WriteLine(CommonVariables.ShootedPointInPlace, point.X, point.Y);
+            bool hit = ships.SelectMany(s => s.Points).Select(p => p.Point).Contains(point);
             if (hit)
             {
                 Console.WriteLine(CommonVariables.Hit);
@@ -46,23 +46,22 @@ namespace MainObjects
             }
         }
 
-        public void UpdateEnemyMap(ValueTuple<int, char> pointValues, PointStatus pointStatus)
+        public void UpdateEnemyMap(Point pointValues, PointStatus pointStatus)
         {
-            Point point = EnemyMap.Single(p => p.X == pointValues.Item1 && p.Y == pointValues.Item2);
+            ExtraPoint point = EnemyMap.Single(p => p.Point.X == pointValues.X && p.Point.Y == pointValues.Y);
             int index = Array.IndexOf(EnemyMap, point);
             EnemyMap[index].Status = pointStatus;
         }
 
-        public PointStatus UpdateOwnMap(ValueTuple<int, char> pointValues)
+        public PointStatus UpdateOwnMap(Point pointValues)
         {
-            Point? point = EnemyMap.Single(p => p.X == pointValues.Item1 && p.Y == pointValues.Item2);
-            int index = Array.IndexOf(EnemyMap, point);
+            ExtraPoint point = OwnMap.Single(p => p.Point.X == pointValues.X && p.Point.Y == pointValues.Y);
+            int index = Array.IndexOf(OwnMap, point);
             OwnMap[index].Status = PointStatus.Hit;
 
             foreach (Ship ship in Ships)
             {
-                point = ship.Points.SingleOrDefault(p => p.X == pointValues.Item1 && p.Y == pointValues.Item2);
-                if (point != null)
+                if(ship.Points.Contains(point))
                 {
                     ship.Points.Remove(point);
                     if (ship.Points.Count == 0)

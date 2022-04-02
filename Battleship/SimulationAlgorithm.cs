@@ -6,22 +6,22 @@ namespace Battleship
     internal class SimulationAlgorithm
     {
         private readonly Random _random = new Random();
-        private readonly ICollection<ValueTuple<int, char>> _firstPlayerPointsToShoot;
-        private readonly ICollection<ValueTuple<int, char>> _firstPlayerLastHitPoints;
-        private readonly ICollection<ValueTuple<int, char>> _secondPlayerPointsToShoot;
-        private readonly ICollection<ValueTuple<int, char>> _secondPlayerLastHitPoints;
-        private readonly Dictionary<ValueTuple<int, char>, IndexType> _firstPlayerNextProbablyPoints;
-        private readonly Dictionary<ValueTuple<int, char>, IndexType> _secondPlayerNextProbablyPoints;
-        private ValueTuple<int, char> _lastPoint = ValueTuple.Create(int.MinValue, char.MinValue);
+        private readonly ICollection<Point> _firstPlayerPointsToShoot;
+        private readonly ICollection<Point> _firstPlayerLastHitPoints;
+        private readonly ICollection<Point> _secondPlayerPointsToShoot;
+        private readonly ICollection<Point> _secondPlayerLastHitPoints;
+        private readonly Dictionary<Point, IndexType> _firstPlayerNextProbablyPoints;
+        private readonly Dictionary<Point, IndexType> _secondPlayerNextProbablyPoints;
+        private Point _lastPoint = Point.CreatePoint(int.MinValue, char.MinValue);
 
         public SimulationAlgorithm()
         {
-            _firstPlayerPointsToShoot = new List<ValueTuple<int, char>>();
-            _firstPlayerLastHitPoints = new List<ValueTuple<int, char>>();
-            _secondPlayerPointsToShoot = new List<ValueTuple<int, char>>();
-            _secondPlayerLastHitPoints = new List<ValueTuple<int, char>>();
-            _firstPlayerNextProbablyPoints = new Dictionary<ValueTuple<int, char>, IndexType>();
-            _secondPlayerNextProbablyPoints = new Dictionary<ValueTuple<int, char>, IndexType> ();
+            _firstPlayerPointsToShoot = new List<Point>();
+            _firstPlayerLastHitPoints = new List<Point>();
+            _secondPlayerPointsToShoot = new List<Point>();
+            _secondPlayerLastHitPoints = new List<Point>();
+            _firstPlayerNextProbablyPoints = new Dictionary<Point, IndexType>();
+            _secondPlayerNextProbablyPoints = new Dictionary<Point, IndexType> ();
         }
 
         internal void Start(Player playerOne, Player playerTwo)
@@ -63,8 +63,8 @@ namespace Battleship
             {
                 foreach (int x in CommonVariables.DefaultXAxis)
                 {
-                    _firstPlayerPointsToShoot.Add(ValueTuple.Create(x, y));
-                    _secondPlayerPointsToShoot.Add(ValueTuple.Create(x, y));
+                    _firstPlayerPointsToShoot.Add(Point.CreatePoint(x, y));
+                    _secondPlayerPointsToShoot.Add(Point.CreatePoint(x, y));
                 }
             }
         }
@@ -90,19 +90,19 @@ namespace Battleship
 
         private PointStatus FirstPlayerShot(Player playerOne, Player playerTwo)
         {
-            ValueTuple<int, char> point = CreatePointForFirstPlayer();
+            Point point = CreatePointForFirstPlayer();
             _lastPoint = point;
             return playerOne.Shot(point, playerTwo.Ships);
         }
 
         private PointStatus SecondPlayerShot(Player playerOne, Player playerTwo)
         {
-            ValueTuple<int, char> point = CreatePointForSecondPlayer();
+            Point point = CreatePointForSecondPlayer();
             _lastPoint = point;
             return playerTwo.Shot(point, playerOne.Ships);
         }
 
-        private ValueTuple<int, char> CreatePointForFirstPlayer()
+        private Point CreatePointForFirstPlayer()
         {
             int index = _random.Next(_firstPlayerNextProbablyPoints.Count);
             if (_firstPlayerNextProbablyPoints.Count == CommonVariables.Zero)
@@ -121,7 +121,7 @@ namespace Battleship
             return _firstPlayerNextProbablyPoints.ElementAt(index).Key;
         }
 
-        private ValueTuple<int, char> CreatePointForSecondPlayer()
+        private Point CreatePointForSecondPlayer()
         {
             int index = _random.Next(_secondPlayerNextProbablyPoints.Count);
             if (_secondPlayerNextProbablyPoints.Count == CommonVariables.Zero)
@@ -140,9 +140,9 @@ namespace Battleship
             return _secondPlayerNextProbablyPoints.ElementAt(index).Key;
         }
 
-        private ValueTuple<int, char> CreateNewPointForFirstPlayer()
+        private Point CreateNewPointForFirstPlayer()
         {
-            ValueTuple<int, char> result = _firstPlayerPointsToShoot.ElementAt(_random.Next(_firstPlayerPointsToShoot.Count));
+            Point result = _firstPlayerPointsToShoot.ElementAt(_random.Next(_firstPlayerPointsToShoot.Count));
             while (_firstPlayerLastHitPoints.Contains(result))
             {
                 result = _firstPlayerPointsToShoot.ElementAt(_random.Next(_firstPlayerPointsToShoot.Count));
@@ -151,9 +151,9 @@ namespace Battleship
             return result;
         }
 
-        private ValueTuple<int, char> CreateNewPointForSecondPlayer()
+        private Point CreateNewPointForSecondPlayer()
         {
-            ValueTuple<int, char> result = _secondPlayerPointsToShoot.ElementAt(_random.Next(_secondPlayerPointsToShoot.Count));
+            Point result = _secondPlayerPointsToShoot.ElementAt(_random.Next(_secondPlayerPointsToShoot.Count));
             while (_secondPlayerLastHitPoints.Contains(result))
             {
                 result = _secondPlayerPointsToShoot.ElementAt(_random.Next(_secondPlayerPointsToShoot.Count));
@@ -365,7 +365,7 @@ namespace Battleship
             if (yIndex != CommonVariables.FirstIndexOfX_Y_Axis && yIndex != CommonVariables.LastIndexOfX_Y_Axis && xIndex != CommonVariables.FirstIndexOfX_Y_Axis && xIndex != CommonVariables.LastIndexOfX_Y_Axis)
             {
                 DecrementOrIncrementIndex(indexType, xIndex, yIndex, out xIndex, out yIndex);
-                _firstPlayerNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), indexType);
+                _firstPlayerNextProbablyPoints.Add(Point.CreatePoint(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), indexType);
             }
         }
 
@@ -374,14 +374,14 @@ namespace Battleship
             if (yIndex != CommonVariables.FirstIndexOfX_Y_Axis && yIndex != CommonVariables.LastIndexOfX_Y_Axis && xIndex != CommonVariables.FirstIndexOfX_Y_Axis && xIndex != CommonVariables.LastIndexOfX_Y_Axis)
             {
                 DecrementOrIncrementIndex(indexType, xIndex, yIndex, out xIndex, out yIndex);
-                _secondPlayerNextProbablyPoints.Add(ValueTuple.Create(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), indexType);
+                _secondPlayerNextProbablyPoints.Add(Point.CreatePoint(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), indexType);
             }
         }
 
         private void FindIndexes(out int xIndex, out int yIndex)
         {
-            xIndex = Array.IndexOf(CommonVariables.DefaultXAxis, _lastPoint.Item1);
-            yIndex = Array.IndexOf(CommonVariables.DefaultYAxis, _lastPoint.Item2);
+            xIndex = Array.IndexOf(CommonVariables.DefaultXAxis, _lastPoint.X);
+            yIndex = Array.IndexOf(CommonVariables.DefaultYAxis, _lastPoint.Y);
         }
 
         private void DecrementOrIncrementIndex(IndexType indexType, int xIndex, int yIndex, out int newXIndex, out int newYIndex)

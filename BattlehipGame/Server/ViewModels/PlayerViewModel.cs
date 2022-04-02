@@ -5,9 +5,9 @@ namespace BattlehipGame.Server.ViewModels
     public class PlayerViewModel
     {
         public string PlayerName { get;}
-        public Point[] Map { get; }
+        public ExtraPoint[] Map { get; }
 
-        public PlayerViewModel(string playerName, Point[] map)
+        public PlayerViewModel(string playerName, ExtraPoint[] map)
         {
             PlayerName = playerName;
             Map = map;

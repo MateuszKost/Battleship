@@ -22,7 +22,7 @@ namespace BattlehipGame.Server.Controllers
         {
             //execute simulation function
 
-            return new List<ShootViewModel> { new ShootViewModel(Point.CreatePoint(1, 'a'), true), new ShootViewModel(Point.CreatePoint(1, 'b'), true), new ShootViewModel(Point.CreatePoint(2, 'c'), false) }; // to postman tests
+            return new List<ShootViewModel> { new ShootViewModel(ExtraPoint.CreatePoint(Point.CreatePoint(1, 'a')), true), new ShootViewModel(ExtraPoint.CreatePoint(Point.CreatePoint(1, 'b')), true), new ShootViewModel(ExtraPoint.CreatePoint(Point.CreatePoint(2, 'c')), false) }; // to postman tests
         }
     }
 }
