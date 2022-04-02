@@ -8,7 +8,7 @@ namespace BattlehipGame.Server.Controllers
     public class GameController : Controller
     {
         [HttpGet("GetPlayers")]
-        public ActionResult<PlayerViewModel[]> GetPlayers()
+        public PlayerViewModel[] GetPlayers()
         {
             CreationAlgorithm creationAlgorithm = new CreationAlgorithm();
             Player firstPlayer =  creationAlgorithm.CreatePlayer("First player");
@@ -18,7 +18,7 @@ namespace BattlehipGame.Server.Controllers
         }
 
         [HttpGet("GetSimulationList")]
-        public ActionResult<IEnumerable<ShootViewModel>> GetSimulationList()
+        public IEnumerable<ShootViewModel> GetSimulationList()
         {
             CreationAlgorithm creationAlgorithm = new CreationAlgorithm();
             Player playerOne = creationAlgorithm.CreatePlayer("First player");
