@@ -13,8 +13,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BattlehipGame.Server", "Bat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BattlehipGame.Client", "BattlehipGame\Client\BattlehipGame.Client.csproj", "{C4B13CF9-ECFC-4E38-AA88-B6502603198A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BattlehipGame.Shared", "BattlehipGame\Shared\BattlehipGame.Shared.csproj", "{668245AB-74A4-4697-BA2B-F62C3503CB71}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,10 +39,6 @@ Global
 		{C4B13CF9-ECFC-4E38-AA88-B6502603198A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C4B13CF9-ECFC-4E38-AA88-B6502603198A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C4B13CF9-ECFC-4E38-AA88-B6502603198A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{668245AB-74A4-4697-BA2B-F62C3503CB71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{668245AB-74A4-4697-BA2B-F62C3503CB71}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{668245AB-74A4-4697-BA2B-F62C3503CB71}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{668245AB-74A4-4697-BA2B-F62C3503CB71}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
