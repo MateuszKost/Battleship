@@ -3,7 +3,7 @@ using MainObjects;
 
 namespace Battleship
 {
-    public class CreationAlgorithm
+    public class Creation
     {
         private readonly Random _random = new Random();
         private bool _guard = false;
@@ -13,6 +13,11 @@ namespace Battleship
 
         public Player CreatePlayer(string firstPlayerName)
         {
+            if (firstPlayerName == null)
+            {
+                firstPlayerName = string.Empty;
+            }
+
             _ownMap = new ExtraPoint[CommonVariables.DefaultMapSize];
             _enemyMap = new ExtraPoint[CommonVariables.DefaultMapSize];
 
@@ -147,30 +152,36 @@ namespace Battleship
                 switch (indexType)
                 {
                     case IndexType.Lower:
-                        index = minimalIndex = Decrement(minimalIndex, x, y);
+                        Decrement(ref minimalIndex, x, y);
+                        index = minimalIndex;
                         break;
                     case IndexType.Higher:
-                        index = maximalIndex = Increment(maximalIndex, x, y);
+                        Increment(ref maximalIndex, x, y);
+                        index = maximalIndex;
                         break;
                     case IndexType.Default:
                         int previousOrNext = _random.Next(CommonVariables.Order.Count());
                         if (previousOrNext == CommonVariables.Previous)
                         {
-                            index = minimalIndex = Decrement(minimalIndex, x, y);
+                            Decrement(ref minimalIndex, x, y);
+                            index = minimalIndex;
                             if (_breakLoop)
                             {
                                 minimalIndex++;
-                                index = maximalIndex = Increment(maximalIndex, x, y);
+                                Increment(ref maximalIndex, x, y);
+                                index = maximalIndex;
                             }
                             indexes.Add(index);
                         }
                         else if (previousOrNext == CommonVariables.Next)
                         {
-                            index = maximalIndex = Increment(maximalIndex, x, y);
+                            Increment(ref maximalIndex, x, y);
+                            index = maximalIndex;
                             if (_breakLoop)
                             {
                                 maximalIndex--;
-                                index = minimalIndex = Decrement(minimalIndex, x, y);
+                                Decrement(ref minimalIndex, x, y);
+                                index = minimalIndex;
                             }
                             indexes.Add(index);
                         }
@@ -209,18 +220,16 @@ namespace Battleship
             return points;
         }
 
-        private int Increment(int index, int? x = null, char? y = null)
+        private void Increment(ref int index, int? x = null, char? y = null)
         {
             index++;
             _breakLoop = CheckIfBreakLoopNeeded(index, x, y);
-            return index;
         }
 
-        private int Decrement(int index, int? x = null, char? y = null)
+        private void Decrement(ref int index, int? x = null, char? y = null)
         {
             index--;
             _breakLoop = CheckIfBreakLoopNeeded(index, x, y);
-            return index;
         }
 
         private bool CheckIfBreakLoopNeeded(int index, int? x = null, char? y = null)

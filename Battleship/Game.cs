@@ -6,7 +6,7 @@ namespace Battleship
     {
         internal static void Start()
         {
-            CreationAlgorithm creationAlgorithm = new CreationAlgorithm();
+            Creation creationAlgorithm = new Creation();
             Player playerOne = creationAlgorithm.CreatePlayer("First player");
             Console.WriteLine("Created {0}", playerOne.NickName);
             Player playerTwo = creationAlgorithm.CreatePlayer("Second player");
@@ -15,7 +15,7 @@ namespace Battleship
             Console.WriteLine();
             Console.WriteLine("Starting the simulation...");
 
-            SimulationAlgorithm simulation = new SimulationAlgorithm();
+            Simulation simulation = new Simulation();
             simulation.Start(playerOne, playerTwo);
             Console.WriteLine("koniec gry");
         }

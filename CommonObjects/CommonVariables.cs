@@ -14,10 +14,6 @@
         public const string ShotPointInPlace = "Oddano strzał w {0}{1}";
         public const string ShipWithNumberSunk = "{0} gracza {1} został zatopiony";
         public const string PlayerWithNumberLost = "Gracz {0} przegrał gre";
-        public const string FirstPlayerStartsTheGame = "Gracz pierwszy rozpoczyna gre!";
-        public const string SecondPlayerStartsTheGame = "Gracz drugi rozpoczyna gre!";
-        public const string FirstPlyaerTurn = "Ruch gracza 1!";
-        public const string SecondPlayerTurn = "Ruch gracza 2!";
 
         public static readonly int[] DefaultXAxis = new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
         public static readonly char[] DefaultYAxis = new char[] { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j' };
