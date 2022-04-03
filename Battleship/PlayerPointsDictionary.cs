@@ -7,6 +7,7 @@ namespace Battleship
     {
         private Random _random = new Random();
 
+        #region internal functions
         internal Point CreatePointForPlayer(PlayerPointsList playerLastHitPoints, PlayerPointsList playerPointsToShoot)
         {
             int index = _random.Next(this.Count);
@@ -49,7 +50,9 @@ namespace Battleship
             }
             deletedPoints.Clear();
         }
+        #endregion
 
+        #region private functions
         private void CreateDictionaryForPlayer(Point _lastPoint)
         {
             FindIndexes(_lastPoint, out int xIndex, out int yIndex);
@@ -151,5 +154,6 @@ namespace Battleship
             newXIndex = xIndex;
             newYIndex = yIndex;
         }
+        #endregion
     }
 }
