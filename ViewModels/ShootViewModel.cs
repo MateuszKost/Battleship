@@ -7,7 +7,7 @@ namespace ViewModels
         public ExtraPoint Point { get;}
         public bool Turn { get; }
 
-        private  ShootViewModel(ExtraPoint point, bool turn)
+        public  ShootViewModel(ExtraPoint point, bool turn)
         {
             Point = point;
             Turn = turn;

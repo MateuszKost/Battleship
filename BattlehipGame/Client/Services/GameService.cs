@@ -3,7 +3,7 @@ using ViewModels;
 
 namespace BattlehipGame.Client.Services
 {
-    public class GameService
+    public class GameService : IGameService
     {
         private HttpClient _httpClient;
 
@@ -18,7 +18,7 @@ namespace BattlehipGame.Client.Services
         }
 
         public async Task<IEnumerable<ShootViewModel>?> GetSimulationList()
-        {
+        { 
             return await _httpClient.GetFromJsonAsync<IEnumerable<ShootViewModel>>("GetSimulationList");
         }
     }

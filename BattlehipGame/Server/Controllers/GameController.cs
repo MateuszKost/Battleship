@@ -7,14 +7,17 @@ namespace BattlehipGame.Server.Controllers
 {
     public class GameController : Controller
     {
+        private Player _firstPlayer;
+        private Player _secondPlayer;
+
         [HttpGet("GetPlayers")]
         public PlayerViewModel[] GetPlayers()
         {
             CreationAlgorithm creationAlgorithm = new CreationAlgorithm();
-            Player firstPlayer =  creationAlgorithm.CreatePlayer("First player");
-            Player secondPlayer =  creationAlgorithm.CreatePlayer("Second player");
+            _firstPlayer =  creationAlgorithm.CreatePlayer("First player");
+            _secondPlayer =  creationAlgorithm.CreatePlayer("Second player");
 
-            return new PlayerViewModel[] { new PlayerViewModel(firstPlayer.NickName, firstPlayer.OwnMap), new PlayerViewModel(secondPlayer.NickName, secondPlayer.OwnMap) };
+            return new PlayerViewModel[] { new PlayerViewModel(_firstPlayer.NickName, _firstPlayer.OwnMap), new PlayerViewModel(_secondPlayer.NickName, _secondPlayer.OwnMap) };
         }
 
         [HttpGet("GetSimulationList")]
@@ -22,18 +25,15 @@ namespace BattlehipGame.Server.Controllers
         {
             CreationAlgorithm creationAlgorithm = new CreationAlgorithm();
             //Check later ship creating, some points of ship sometimes are not in line
-            Player playerOne = creationAlgorithm.CreatePlayer("First player");
-            Console.WriteLine("Created {0}", playerOne.NickName);
-            Player playerTwo = creationAlgorithm.CreatePlayer("Second player");
-            Console.WriteLine("Created {0}", playerTwo.NickName);
+            Console.WriteLine("Created {0}", _firstPlayer.NickName);
+            Console.WriteLine("Created {0}", _secondPlayer.NickName);
             Console.WriteLine();
             Console.WriteLine();
             Console.WriteLine("Starting the simulation...");
 
             SimulationAlgorithm simulation = new SimulationAlgorithm();
-            simulation.Start(playerOne, playerTwo);
 
-            return simulation.Start(playerOne, playerTwo);
+            return simulation.Start(_firstPlayer, _secondPlayer);
         }
     }
 }
