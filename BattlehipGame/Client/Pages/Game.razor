@@ -1,3 +1,81 @@
-﻿
-<button type="submit" class="text-center col-1 btn btn-danger" style="float: right; margin-bottom: 5px;" @onclick="@( () => GetPlayers() )"><i class="oi oi-trash"></i>Start</button>
-<button type="submit" class="text-center col-1 btn btn-success" style="float: right; margin-bottom: 5px;" @onclick="@( () => Simulate() )"><i class="oi oi-eye"></i>Simulate</button>
+﻿@page "/Game"
+@using MainObjects
+@using ViewModels
+
+<div style="text-align: center; margin-top: 250px; margin-bottom: 100px">
+    <button type="submit" class="text-center col-1 btn btn-success" style="text-align: center" @onclick="@( () => StartGame() )">Start Game</button>
+</div>
+
+<div class="GamePlay" style="text-align: center">
+
+    <div class="Player">
+        <h3>gracz 1</h3>
+        <div class="Board">
+            @foreach (int x in CommonObjects.CommonVariables.DefaultXAxis)
+            {
+                @foreach (char y in CommonObjects.CommonVariables.DefaultYAxis)
+                {
+                    _name = _firstPlayerSquare + x.ToString() + y;
+                    <div class="Sqare" id=@_name></div>
+                }
+            }
+        </div>
+    </div>
+
+    <div class="Player">
+        <h3>gracz 2</h3>
+        <div class="Board">
+            @foreach (int x in CommonObjects.CommonVariables.DefaultXAxis)
+            {
+                @foreach (char y in CommonObjects.CommonVariables.DefaultYAxis)
+                {
+                    _name = _secondPlayerSquare + x.ToString() + y;
+                    <div class="Sqare" id=@_name></div>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@if (_valuesCreated)
+{
+    bool turn = true;
+    for (int i = 0; i < players.Length; i++)
+    {
+        if (i == 1)
+        {
+            turn = false;
+        }
+        foreach (ExtraPoint point in players[i].Map)
+        {
+            CallJSMethod(point.Point.X, point.Point.Y, point.Status, turn);
+        }
+    }
+}
+
+<style type="text/css">
+
+    .Player {
+        display: inline-block;
+        vertical-align: middle;
+        border: 1px solid red;
+        padding: 1rem 1rem;
+    }
+
+    .Board {
+        width: 400px;
+        height: 400px;
+        border: 1px solid green;
+        display: flex;
+        flex-wrap: wrap;
+        margin: 1px 1px 1px 1px;
+    }
+
+        .Board div {
+            width: 10%;
+            height: 10%;
+            box-sizing: border-box;
+            border: 1px solid purple;
+            background-color: lightgray;
+        }
+</style>

@@ -20,6 +20,12 @@
         <a class="dismiss">🗙</a>
     </div>
     <script src="_framework/blazor.webassembly.js"></script>
+    <script>
+        window.changeColor = (name, color) => {
+            var elem = document.getElementById(name);
+            elem.style.backgroundColor= color;
+        }
+    </script>
 </body>
 
 </html>

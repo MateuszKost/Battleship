@@ -1,4 +1,5 @@
 ﻿using System.Net.Http.Json;
+using System.Text.Json;
 using ViewModels;
 
 namespace BattlehipGame.Client.Services
@@ -13,8 +14,8 @@ namespace BattlehipGame.Client.Services
         }
 
         public async Task<PlayerViewModel[]?> GetPlayers()
-        {
-            return await _httpClient.GetFromJsonAsync<PlayerViewModel[]>("GetPlayers"); ;
+        { 
+            return await _httpClient.GetFromJsonAsync<PlayerViewModel[]>("GetPlayers");
         }
 
         public async Task<IEnumerable<ShootViewModel>?> GetSimulationList()

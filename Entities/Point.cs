@@ -9,8 +9,8 @@
          * Y - like in coordinate system y value 
          */
 
-        public int X { get; }
-        public char Y { get; }
+        public int X { get; set; } // changed from only getter to get; set; in case of problems with deserialization
+        public char Y { get; set; } // changed from only getter to get; set; in case of problems with deserialization
 
         private Point(int x, char y)
         {
