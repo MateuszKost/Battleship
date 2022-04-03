@@ -1,6 +1,6 @@
-﻿using Battlehip.ViewModels;
-using CommonObjects;
+﻿using CommonObjects;
 using MainObjects;
+using ViewModels;
 
 namespace Battleship
 {
@@ -12,7 +12,9 @@ namespace Battleship
         private readonly PlayerPointsList _secondPlayerPointsToShoot;
         private readonly PlayerPointsList _secondPlayerLastHitPoints;
         private readonly PlayerPointsDictionary _firstPlayerNextProbablyPoints;
+        private readonly PlayerPointsDictionary _firstPlayerDeletedPoints;
         private readonly PlayerPointsDictionary _secondPlayerNextProbablyPoints;
+        private readonly PlayerPointsDictionary _secondPlayerDeletedPoints;
         private readonly ICollection<ShootViewModel> _shootForApi;
         private Point _lastPoint = Point.CreatePoint(int.MinValue, char.MinValue);
 
@@ -23,7 +25,9 @@ namespace Battleship
             _secondPlayerPointsToShoot = new PlayerPointsList();
             _secondPlayerLastHitPoints = new PlayerPointsList();
             _firstPlayerNextProbablyPoints = new PlayerPointsDictionary();
+            _firstPlayerDeletedPoints = new PlayerPointsDictionary();
             _secondPlayerNextProbablyPoints = new PlayerPointsDictionary();
+            _secondPlayerDeletedPoints= new PlayerPointsDictionary();
             _shootForApi = new List<ShootViewModel>();
         }
 
@@ -80,13 +84,13 @@ namespace Battleship
             {
                 pointStatus = FirstPlayerShoot(playerOne, playerTwo);
                 pointStatus = CheckIfShotHitForFirstPlayer(playerOne, playerTwo, pointStatus);
-                _firstPlayerLastHitPoints.CheckPointStatusForPlayer(_firstPlayerNextProbablyPoints, _shootForApi, pointStatus, _lastPoint, playerTurn);
+                _firstPlayerLastHitPoints.CheckPointStatusForPlayer(_firstPlayerNextProbablyPoints, _firstPlayerDeletedPoints, _shootForApi, pointStatus, _lastPoint, playerTurn);
             }
             else
             {
                 pointStatus = SecondPlayerShoot(playerOne, playerTwo);
                 pointStatus = CheckIfShotHitForSecondPlayer(playerOne, playerTwo, pointStatus);
-                _secondPlayerLastHitPoints.CheckPointStatusForPlayer(_secondPlayerNextProbablyPoints, _shootForApi, pointStatus, _lastPoint, playerTurn);
+                _secondPlayerLastHitPoints.CheckPointStatusForPlayer(_secondPlayerNextProbablyPoints, _secondPlayerDeletedPoints, _shootForApi, pointStatus, _lastPoint, playerTurn);
             }
 
             return pointStatus;

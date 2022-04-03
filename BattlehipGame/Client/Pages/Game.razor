@@ -1,0 +1,100 @@
+﻿@page "/Game"
+@using MainObjects
+@using ViewModels
+
+<div style="text-align: center; margin-top: 250px; margin-bottom: 100px">
+    <button type="submit" class="text-center col-1 btn btn-success" style="text-align: center" @onclick="@( () => StartGame() )">@buttonName</button>
+</div>
+
+<div class="GamePlay" style="text-align: center">
+
+    <div class="Player">
+        <h3>mapa gracza 1</h3>
+        <div class="Board">
+            @foreach (int x in CommonObjects.CommonVariables.DefaultXAxis)
+            {
+                @foreach (char y in CommonObjects.CommonVariables.DefaultYAxis)
+                {
+                    _name = _firstPlayerSquare + x.ToString() + y;
+                    <div class="Sqare" id=@_name></div>
+                }
+            }
+        </div>
+    </div>
+
+    <div class="Player">
+        <h3>mapa gracza 2</h3>
+        <div class="Board">
+            @foreach (int x in CommonObjects.CommonVariables.DefaultXAxis)
+            {
+                @foreach (char y in CommonObjects.CommonVariables.DefaultYAxis)
+                {
+                    _name = _secondPlayerSquare + x.ToString() + y;
+                    <div class="Sqare" id=@_name></div>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@if (_valuesCreated)
+{
+    bool turn = true;
+    for (int i = 0; i < players.Length; i++)
+    {
+        if (i == 1)
+        {
+            turn = false;
+        }
+        foreach (ExtraPoint point in players[i].Map)
+        {
+            CallJSMethod(point.Point.X, point.Point.Y, point.Status, turn);
+        }
+    }
+
+    foreach (ShootViewModel shoot in simulationList)
+    {
+        CallJSMethod(shoot.Point.Point.X, shoot.Point.Point.Y, shoot.Point.Status, !shoot.Turn);
+        turn = shoot.Turn;
+    }
+
+    <div style="text-align: center; margin-top: 50px">
+        @if(turn)
+        {
+        <h1>Wygrał gracz 1</h1>
+        }
+        else
+        {
+        <h1>Wygrał gracz 2</h1>
+        }
+    </div>
+
+    buttonName = "Restart simulation";
+}
+
+<style type="text/css">
+
+    .Player {
+        display: inline-block;
+        vertical-align: middle;
+        border: 1px solid red;
+        padding: 1rem 1rem;
+    }
+
+    .Board {
+        width: 400px;
+        height: 400px;
+        border: 1px solid green;
+        display: flex;
+        flex-wrap: wrap;
+        margin: 1px 1px 1px 1px;
+    }
+
+        .Board div {
+            width: 10%;
+            height: 10%;
+            box-sizing: border-box;
+            border: 1px solid purple;
+            background-color: lightgray;
+        }
+</style>

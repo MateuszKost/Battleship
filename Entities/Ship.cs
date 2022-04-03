@@ -12,11 +12,13 @@ namespace MainObjects
     {
         public string ShipName { get; }
         public ICollection<ExtraPoint> Points { get; }
+        internal int Length { get; }
 
         private Ship(string shipName, ICollection<ExtraPoint> points)
         {
             ShipName = shipName;
             Points = points;
+            Length = points.Count;
         }
 
         public static Ship CreateShip(string shipName, ICollection<ExtraPoint> points)

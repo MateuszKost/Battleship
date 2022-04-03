@@ -10,7 +10,7 @@ namespace MainObjects
      */
     public struct ExtraPoint
     {
-        public Point Point { get; }
+        public Point Point { get; set; } // changed from only getter to get; set; in case of problems with deserialization
         public PointStatus Status { get; set; }
 
         private ExtraPoint(Point point, PointStatus pointStatus)
@@ -21,6 +21,12 @@ namespace MainObjects
 
         public static ExtraPoint CreateExtraPoint(Point point, PointStatus pointStatus = PointStatus.Free)
         {
+            return new ExtraPoint(point, pointStatus);
+        }
+
+        public static ExtraPoint CreateExtraPoint(int x, char y, PointStatus pointStatus = PointStatus.Free)
+        {
+            Point point = Point.CreatePoint(x, y);
             return new ExtraPoint(point, pointStatus);
         }
     }

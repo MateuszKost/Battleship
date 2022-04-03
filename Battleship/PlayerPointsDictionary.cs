@@ -26,16 +26,28 @@ namespace Battleship
             return this.ElementAt(index).Key;
         }
 
-        internal void CheckDictionariesForPlayer(Point _lastPoint)
+        internal void CheckDictionariesForPlayer(Point _lastPoint, PointStatus pointStatus, PlayerPointsDictionary deletedPoints)
         {
             if (this.Any())
             {
-                UpdateDictionariesForPlayer(_lastPoint);
+                UpdateDictionariesForPlayer(_lastPoint, pointStatus, deletedPoints);
             }
             else
             {
                 CreateDictionaryForPlayer(_lastPoint);
             }
+        }
+
+        internal void ReturnDeletedPoints(PlayerPointsDictionary deletedPoints)
+        {
+            foreach (var item in deletedPoints)
+            {
+                if (!this.ContainsKey(item.Key))
+                {
+                    this.Add(item.Key, item.Value);
+                }
+            }
+            deletedPoints.Clear();
         }
 
         private void CreateDictionaryForPlayer(Point _lastPoint)
@@ -52,41 +64,56 @@ namespace Battleship
             TryToAddPointToNextProbablyPointsForPlayer(IndexType.HorizontalRight, xIndexCopy, yIndex);
         }
 
-        private void UpdateDictionariesForPlayer(Point _lastPoint)
+        private void UpdateDictionariesForPlayer(Point _lastPoint, PointStatus pointStatus, PlayerPointsDictionary deletedPoints)
         {
             IndexType indexType = this[_lastPoint];
             FindIndexes(_lastPoint, out int xIndex, out int yIndex);
 
-            switch (indexType)
+            if (pointStatus == PointStatus.Hit)
             {
-                case IndexType.VerticalDown:
-                    foreach (var item in this.Where(i => i.Value == IndexType.HorizontalLeft || i.Value == IndexType.HorizontalRight))
-                    {
-                        this.Remove(item.Key);
-                    }
-                    break;
-                case IndexType.VerticalUp:
-                    foreach (var item in this.Where(i => i.Value == IndexType.HorizontalLeft || i.Value == IndexType.HorizontalRight))
-                    {
-                        this.Remove(item.Key);
-                    }
-                    break;
-                case IndexType.HorizontalLeft:
-                    foreach (var item in this.Where(i => i.Value == IndexType.VerticalDown || i.Value == IndexType.VerticalUp))
-                    {
-                        this.Remove(item.Key);
-                    }
-                    break;
-                case IndexType.HorizontalRight:
-                    foreach (var item in this.Where(i => i.Value == IndexType.VerticalDown || i.Value == IndexType.VerticalUp))
-                    {
-                        this.Remove(item.Key);
-                    }
-                    break;
+                switch (indexType)
+                {
+                    case IndexType.VerticalDown:
+                        RemoveHorizontalLeftAndRight(deletedPoints);
+                        break;
+                    case IndexType.VerticalUp:
+                        RemoveHorizontalLeftAndRight(deletedPoints);
+                        break;
+                    case IndexType.HorizontalLeft:
+                        RomoveVerticalUpAndDown(deletedPoints);
+                        break;
+                    case IndexType.HorizontalRight:
+                        RomoveVerticalUpAndDown(deletedPoints);
+                        break;
+                }
+                TryToAddPointToNextProbablyPointsForPlayer(indexType, xIndex, yIndex);
             }
-
-            TryToAddPointToNextProbablyPointsForPlayer(indexType, xIndex, yIndex);
             this.Remove(_lastPoint);
+        }
+
+        private void RemoveHorizontalLeftAndRight(PlayerPointsDictionary deletedPoints)
+        {
+            foreach (var item in this.Where(i => i.Value == IndexType.HorizontalLeft || i.Value == IndexType.HorizontalRight))
+            {
+                AddToDeletedPoints(deletedPoints, item);
+            }
+        }
+
+        private void RomoveVerticalUpAndDown(PlayerPointsDictionary deletedPoints)
+        {
+            foreach (var item in this.Where(i => i.Value == IndexType.VerticalDown || i.Value == IndexType.VerticalUp))
+            {
+                AddToDeletedPoints(deletedPoints, item);
+            }
+        }
+
+        private void AddToDeletedPoints(PlayerPointsDictionary deletedPoints, KeyValuePair<Point, IndexType> item)
+        {
+            this.Remove(item.Key);
+            if (!deletedPoints.ContainsKey(item.Key))
+            {
+                deletedPoints.Add(item.Key, item.Value);
+            }
         }
 
         private void FindIndexes(Point _lastPoint, out int xIndex, out int yIndex)
@@ -97,9 +124,9 @@ namespace Battleship
 
         private void TryToAddPointToNextProbablyPointsForPlayer(IndexType indexType, int xIndex, int yIndex)
         {
-            if (yIndex != CommonVariables.FirstIndexOfX_Y_Axis && yIndex != CommonVariables.LastIndexOfX_Y_Axis && xIndex != CommonVariables.FirstIndexOfX_Y_Axis && xIndex != CommonVariables.LastIndexOfX_Y_Axis)
+            DecrementOrIncrementIndex(indexType, xIndex, yIndex, out xIndex, out yIndex);
+            if (yIndex >= CommonVariables.FirstIndexOfX_Y_Axis && yIndex <= CommonVariables.LastIndexOfX_Y_Axis && xIndex >= CommonVariables.FirstIndexOfX_Y_Axis && xIndex <= CommonVariables.LastIndexOfX_Y_Axis)
             {
-                DecrementOrIncrementIndex(indexType, xIndex, yIndex, out xIndex, out yIndex);
                 this.Add(Point.CreatePoint(CommonVariables.DefaultXAxis[xIndex], CommonVariables.DefaultYAxis[yIndex]), indexType);
             }
         }

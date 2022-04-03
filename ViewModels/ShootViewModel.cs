@@ -1,13 +1,13 @@
 ﻿using MainObjects;
 
-namespace Battlehip.ViewModels
+namespace ViewModels
 {
     public class ShootViewModel
     {
         public ExtraPoint Point { get;}
         public bool Turn { get; }
 
-        private  ShootViewModel(ExtraPoint point, bool turn)
+        public  ShootViewModel(ExtraPoint point, bool turn)
         {
             Point = point;
             Turn = turn;

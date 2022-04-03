@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Pages\" />
+    <ProjectReference Include="..\..\ViewModels\ViewModels.csproj" />
   </ItemGroup>
 
 </Project>
