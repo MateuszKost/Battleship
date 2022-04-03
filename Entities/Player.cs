@@ -73,6 +73,12 @@ namespace MainObjects
                         {
                             Console.WriteLine(CommonVariables.PlayerWithNumberLost, NickName);
                         }
+
+                        if(Ships.Any(s => s.Length != s.Points.Count))
+                        {
+                            return PointStatus.HitButNoSunk;
+                        }
+
                         return PointStatus.Sunk;
                     }
                 }

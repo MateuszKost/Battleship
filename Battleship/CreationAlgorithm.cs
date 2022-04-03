@@ -159,6 +159,7 @@ namespace Battleship
                             index = minimalIndex = Decrement(minimalIndex, x, y);
                             if (_breakLoop)
                             {
+                                minimalIndex++;
                                 index = maximalIndex = Increment(maximalIndex, x, y);
                             }
                             indexes.Add(index);
@@ -168,6 +169,7 @@ namespace Battleship
                             index = maximalIndex = Increment(maximalIndex, x, y);
                             if (_breakLoop)
                             {
+                                maximalIndex--;
                                 index = minimalIndex = Decrement(minimalIndex, x, y);
                             }
                             indexes.Add(index);

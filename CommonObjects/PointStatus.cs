@@ -6,6 +6,7 @@
         Taken,
         Hit,
         Missed,
-        Sunk
+        Sunk,
+        HitButNoSunk
     }
 }

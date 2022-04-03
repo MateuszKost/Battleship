@@ -1,4 +1,5 @@
 ﻿using CommonObjects;
+using MainObjects;
 using Microsoft.JSInterop;
 using ViewModels;
 
@@ -12,15 +13,25 @@ namespace BattlehipGame.Client.Pages
         string _firstPlayerSquare = "firstPlayerSquare";
         string _secondPlayerSquare = "secondPlayerSquare";
         bool _valuesCreated = false;
-
-
-        protected override async Task OnInitializedAsync()
-        {
-
-        }
+        bool turn = true;
+        string buttonName = "Start simulation";
 
         private async Task StartGame()
         {
+            if(simulationList != null)
+            {
+                for (int i = 0; i < players.Length; i++)
+                {
+                    if (i == 1)
+                    {
+                        turn = false;
+                    }
+                    foreach (ExtraPoint point in players[i].Map)
+                    {
+                        CallJSMethod(point.Point.X, point.Point.Y, PointStatus.Free, turn);
+                    }
+                }
+            }
             players = await GameService.GetPlayers();
             simulationList = await GameService.GetSimulationList();
             _valuesCreated = true;
@@ -43,6 +54,7 @@ namespace BattlehipGame.Client.Pages
                         await Current.InvokeVoidAsync("changeColor", _firstPlayerSquare + x.ToString() + y, "black");
                         break;
                     case PointStatus.Free:
+                        await Current.InvokeVoidAsync("changeColor", _firstPlayerSquare + x.ToString() + y, "lightgray");
                         break;
                 }
             }
@@ -60,6 +72,7 @@ namespace BattlehipGame.Client.Pages
                         await Current.InvokeVoidAsync("changeColor", _secondPlayerSquare + x.ToString() + y, "black");
                         break;
                     case PointStatus.Free:
+                        await Current.InvokeVoidAsync("changeColor", _secondPlayerSquare + x.ToString() + y, "lightgray");
                         break;
                 }
             }

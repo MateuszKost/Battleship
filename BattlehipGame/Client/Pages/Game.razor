@@ -3,13 +3,13 @@
 @using ViewModels
 
 <div style="text-align: center; margin-top: 250px; margin-bottom: 100px">
-    <button type="submit" class="text-center col-1 btn btn-success" style="text-align: center" @onclick="@( () => StartGame() )">Start Game</button>
+    <button type="submit" class="text-center col-1 btn btn-success" style="text-align: center" @onclick="@( () => StartGame() )">@buttonName</button>
 </div>
 
 <div class="GamePlay" style="text-align: center">
 
     <div class="Player">
-        <h3>gracz 1</h3>
+        <h3>mapa gracza 1</h3>
         <div class="Board">
             @foreach (int x in CommonObjects.CommonVariables.DefaultXAxis)
             {
@@ -23,7 +23,7 @@
     </div>
 
     <div class="Player">
-        <h3>gracz 2</h3>
+        <h3>mapa gracza 2</h3>
         <div class="Board">
             @foreach (int x in CommonObjects.CommonVariables.DefaultXAxis)
             {
@@ -52,11 +52,24 @@
         }
     }
 
-    foreach(ShootViewModel shoot in simulationList)
+    foreach (ShootViewModel shoot in simulationList)
     {
         CallJSMethod(shoot.Point.Point.X, shoot.Point.Point.Y, shoot.Point.Status, !shoot.Turn);
-        //Thread.Sleep(50);
+        turn = shoot.Turn;
     }
+
+    <div style="text-align: center; margin-top: 50px">
+        @if(turn)
+        {
+        <h1>Wygrał gracz 1</h1>
+        }
+        else
+        {
+        <h1>Wygrał gracz 2</h1>
+        }
+    </div>
+
+    buttonName = "Restart simulation";
 }
 
 <style type="text/css">
