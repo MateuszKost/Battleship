@@ -51,6 +51,12 @@
             CallJSMethod(point.Point.X, point.Point.Y, point.Status, turn);
         }
     }
+
+    foreach(ShootViewModel shoot in simulationList)
+    {
+        CallJSMethod(shoot.Point.Point.X, shoot.Point.Point.Y, shoot.Point.Status, !shoot.Turn);
+        //Thread.Sleep(50);
+    }
 }
 
 <style type="text/css">
