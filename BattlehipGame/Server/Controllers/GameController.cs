@@ -1,7 +1,7 @@
-﻿using Battlehip.ViewModels;
-using Battleship;
+﻿using Battleship;
 using MainObjects;
 using Microsoft.AspNetCore.Mvc;
+using ViewModels;
 
 namespace BattlehipGame.Server.Controllers
 {

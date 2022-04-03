@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Battleship\Battleship.csproj" />
     <ProjectReference Include="..\..\Entities\MainObjects.csproj" />
+    <ProjectReference Include="..\..\ViewModels\ViewModels.csproj" />
     <ProjectReference Include="..\Client\BattlehipGame.Client.csproj" />
   </ItemGroup>
 

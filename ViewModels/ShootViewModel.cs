@@ -1,6 +1,6 @@
 ﻿using MainObjects;
 
-namespace Battlehip.ViewModels
+namespace ViewModels
 {
     public class ShootViewModel
     {

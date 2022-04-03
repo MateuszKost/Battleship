@@ -1,6 +1,6 @@
-﻿using Battlehip.ViewModels;
-using CommonObjects;
+﻿using CommonObjects;
 using MainObjects;
+using ViewModels;
 
 namespace Battleship
 {
