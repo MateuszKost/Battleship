@@ -33,6 +33,11 @@ namespace Battleship
 
         public ICollection<ShootViewModel> Start(Player playerOne, Player playerTwo)
         {
+            if(playerOne == null || playerTwo == null)
+            {
+                throw new ArgumentNullException(nameof(Player));
+            }
+
             PointStatus pointStatus;
             bool playerTurn;
             FillDictionaries();
@@ -65,6 +70,7 @@ namespace Battleship
             return _shootForApi;
         }
 
+        #region private functions
         private void FillDictionaries()
         {
             foreach (char y in CommonVariables.DefaultYAxis)
@@ -137,5 +143,6 @@ namespace Battleship
             }
             return pointStatus;
         }
+        #endregion
     }
 }

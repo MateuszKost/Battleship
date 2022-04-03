@@ -27,6 +27,11 @@ namespace MainObjects
 
         public static Player CreatePlayer(string nickName, ICollection<Ship> ships, ExtraPoint[] ownMap, ExtraPoint[] enemyMap)
         {
+            if (nickName == null || ships == null || ownMap == null || enemyMap == null)
+            {
+                throw new ArgumentNullException();
+            }
+
             return new Player(nickName, ships, ownMap, enemyMap);
         }
 
@@ -61,7 +66,7 @@ namespace MainObjects
 
             foreach (Ship ship in Ships)
             {
-                if(ship.Points.Contains(point))
+                if (ship.Points.Contains(point))
                 {
                     ship.Points.Remove(point);
                     if (ship.Points.Count == 0)
@@ -74,7 +79,7 @@ namespace MainObjects
                             Console.WriteLine(CommonVariables.PlayerWithNumberLost, NickName);
                         }
 
-                        if(Ships.Any(s => s.Length != s.Points.Count))
+                        if (Ships.Any(s => s.Length != s.Points.Count))
                         {
                             return PointStatus.HitButNoSunk;
                         }

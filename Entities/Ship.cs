@@ -23,6 +23,11 @@ namespace MainObjects
 
         public static Ship CreateShip(string shipName, ICollection<ExtraPoint> points)
         {
+            if (shipName == null)
+            {
+                shipName = string.Empty;
+            }
+
             if (points == null)
             {
                 throw new ArgumentNullException(nameof(points));

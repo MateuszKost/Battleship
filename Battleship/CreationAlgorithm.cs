@@ -13,6 +13,11 @@ namespace Battleship
 
         public Player CreatePlayer(string firstPlayerName)
         {
+            if (firstPlayerName == null)
+            {
+                firstPlayerName = string.Empty;
+            }
+
             _ownMap = new ExtraPoint[CommonVariables.DefaultMapSize];
             _enemyMap = new ExtraPoint[CommonVariables.DefaultMapSize];
 
