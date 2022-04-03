@@ -7,6 +7,7 @@ namespace Battleship
     {
         private readonly Random _random = new Random();
         private bool _guard = false;
+        private bool _breakLoop = false;
         private ExtraPoint[] _ownMap;
         private ExtraPoint[] _enemyMap;
 
@@ -28,8 +29,8 @@ namespace Battleship
             {
                 foreach (int x in CommonVariables.DefaultXAxis)
                 {
-                    _ownMap[index] = ExtraPoint.CreateExtraPoint(Point.CreatePoint(x, y));
-                    _enemyMap[index] = ExtraPoint.CreateExtraPoint(Point.CreatePoint(x, y));
+                    _ownMap[index] = ExtraPoint.CreateExtraPoint(x, y);
+                    _enemyMap[index] = ExtraPoint.CreateExtraPoint(x, y);
                     index++;
                 }
             }
@@ -65,7 +66,7 @@ namespace Battleship
             int x = CommonVariables.DefaultXAxis[xIndex];
             char y = CommonVariables.DefaultYAxis[yIndex];
 
-            ExtraPoint startPoint = ExtraPoint.CreateExtraPoint(Point.CreatePoint(x, y), PointStatus.Taken);
+            ExtraPoint startPoint = ExtraPoint.CreateExtraPoint(x, y, PointStatus.Taken);
 
             if (_ownMap.Single(p => p.Point.X == startPoint.Point.X && p.Point.Y == startPoint.Point.Y).Status == PointStatus.Free)
             {
@@ -115,7 +116,7 @@ namespace Battleship
 
         private ICollection<ExtraPoint>? FindOtherPointsPart2(ExtraPoint startPoint, int shipLength, int arrangement, int? x = null, char? y = null)
         {
-            bool breakLoop = false;
+            _breakLoop = false;
             int minimalIndex, maximalIndex, index;
             int shipLengthCopy = shipLength;
             IndexType indexType;
@@ -146,44 +147,37 @@ namespace Battleship
                 switch (indexType)
                 {
                     case IndexType.Lower:
-                        Decrement(minimalIndex, out minimalIndex, out breakLoop, x, y);
-                        index = minimalIndex;
+                        index = minimalIndex = Decrement(minimalIndex, x, y);
                         break;
                     case IndexType.Higher:
-                        Increment(maximalIndex, out maximalIndex, out breakLoop, x, y);
-                        index = maximalIndex;
+                        index = maximalIndex = Increment(maximalIndex, x, y);
                         break;
                     case IndexType.Default:
                         int previousOrNext = _random.Next(CommonVariables.Order.Count());
                         if (previousOrNext == CommonVariables.Previous)
                         {
-                            Decrement(minimalIndex, out minimalIndex, out breakLoop, x, y);
-                            index = minimalIndex;
-                            if (breakLoop)
+                            index = minimalIndex = Decrement(minimalIndex, x, y);
+                            if (_breakLoop)
                             {
-                                Increment(maximalIndex, out maximalIndex, out breakLoop, x, y);
-                                index = maximalIndex;
+                                index = maximalIndex = Increment(maximalIndex, x, y);
                             }
-
                             indexes.Add(index);
                         }
                         else if (previousOrNext == CommonVariables.Next)
                         {
-                            Increment(maximalIndex, out maximalIndex, out breakLoop, x, y);
-                            index = maximalIndex;
-                            if (breakLoop)
+                            index = maximalIndex = Increment(maximalIndex, x, y);
+                            if (_breakLoop)
                             {
-                                Decrement(minimalIndex, out minimalIndex, out breakLoop, x, y);
-                                index = minimalIndex;
+                                index = minimalIndex = Decrement(minimalIndex, x, y);
                             }
                             indexes.Add(index);
                         }
                         break;
                 }
 
-                if (breakLoop)
+                if (_breakLoop)
                 {
-                    if (_guard == true)
+                    if (_guard)
                     {
                         points = null;
                     }
@@ -199,12 +193,12 @@ namespace Battleship
                 {
                     if (arrangement == CommonVariables.Horizontal)
                     {
-                        points.Add(ExtraPoint.CreateExtraPoint(Point.CreatePoint(CommonObjects.CommonVariables.DefaultXAxis[index], startPoint.Point.Y), PointStatus.Taken));
+                        points.Add(ExtraPoint.CreateExtraPoint(CommonObjects.CommonVariables.DefaultXAxis[index], startPoint.Point.Y, PointStatus.Taken));
 
                     }
                     else
                     {
-                        points.Add(ExtraPoint.CreateExtraPoint(Point.CreatePoint(startPoint.Point.X, CommonObjects.CommonVariables.DefaultYAxis[index]), PointStatus.Taken));
+                        points.Add(ExtraPoint.CreateExtraPoint(startPoint.Point.X, CommonObjects.CommonVariables.DefaultYAxis[index], PointStatus.Taken));
                     }
                 }
 
@@ -213,18 +207,18 @@ namespace Battleship
             return points;
         }
 
-        private void Increment(int index, out int indexIncremented, out bool breakLoop, int? x = null, char? y = null)
+        private int Increment(int index, int? x = null, char? y = null)
         {
             index++;
-            indexIncremented = index;
-            breakLoop = CheckIfBreakLoopNeeded(indexIncremented, x, y);
+            _breakLoop = CheckIfBreakLoopNeeded(index, x, y);
+            return index;
         }
 
-        private void Decrement(int index, out int indexDecremented, out bool breakLoop, int? x = null, char? y = null)
+        private int Decrement(int index, int? x = null, char? y = null)
         {
             index--;
-            indexDecremented = index;
-            breakLoop = CheckIfBreakLoopNeeded(indexDecremented, x, y);
+            _breakLoop = CheckIfBreakLoopNeeded(index, x, y);
+            return index;
         }
 
         private bool CheckIfBreakLoopNeeded(int index, int? x = null, char? y = null)
@@ -259,9 +253,8 @@ namespace Battleship
         private IndexType CheckIndexes(IEnumerable<int> indexes)
         {
             IndexType indexType = IndexType.Default;
-            for (int i = 0; i < indexes.Count(); i++)
+            foreach (int element in indexes)
             {
-                int element = indexes.ElementAt(i);
                 if (element == CommonVariables.FirstIndexOfX_Y_Axis)
                 {
                     return IndexType.Higher;

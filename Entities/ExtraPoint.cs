@@ -23,5 +23,11 @@ namespace MainObjects
         {
             return new ExtraPoint(point, pointStatus);
         }
+
+        public static ExtraPoint CreateExtraPoint(int x, char y, PointStatus pointStatus = PointStatus.Free)
+        {
+            Point point = Point.CreatePoint(x, y);
+            return new ExtraPoint(point, pointStatus);
+        }
     }
 }

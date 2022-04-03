@@ -60,33 +60,37 @@ namespace Battleship
             switch (indexType)
             {
                 case IndexType.VerticalDown:
-                    foreach (var item in this.Where(i => i.Value == IndexType.HorizontalLeft || i.Value == IndexType.HorizontalRight))
-                    {
-                        this.Remove(item.Key);
-                    }
+                    RemoveHorizontalLeftAndRight();
                     break;
                 case IndexType.VerticalUp:
-                    foreach (var item in this.Where(i => i.Value == IndexType.HorizontalLeft || i.Value == IndexType.HorizontalRight))
-                    {
-                        this.Remove(item.Key);
-                    }
+                    RemoveHorizontalLeftAndRight();
                     break;
                 case IndexType.HorizontalLeft:
-                    foreach (var item in this.Where(i => i.Value == IndexType.VerticalDown || i.Value == IndexType.VerticalUp))
-                    {
-                        this.Remove(item.Key);
-                    }
+                    RomoveVerticalUpAndDown();
                     break;
                 case IndexType.HorizontalRight:
-                    foreach (var item in this.Where(i => i.Value == IndexType.VerticalDown || i.Value == IndexType.VerticalUp))
-                    {
-                        this.Remove(item.Key);
-                    }
+                    RomoveVerticalUpAndDown();
                     break;
             }
 
             TryToAddPointToNextProbablyPointsForPlayer(indexType, xIndex, yIndex);
             this.Remove(_lastPoint);
+        }
+
+        private void RemoveHorizontalLeftAndRight()
+        {
+            foreach (var item in this.Where(i => i.Value == IndexType.HorizontalLeft || i.Value == IndexType.HorizontalRight))
+            {
+                this.Remove(item.Key);
+            }
+        }
+
+        private void RomoveVerticalUpAndDown()
+        {
+            foreach (var item in this.Where(i => i.Value == IndexType.VerticalDown || i.Value == IndexType.VerticalUp))
+            {
+                this.Remove(item.Key);
+            }
         }
 
         private void FindIndexes(Point _lastPoint, out int xIndex, out int yIndex)

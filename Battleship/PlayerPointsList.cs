@@ -1,7 +1,6 @@
 ﻿using Battlehip.ViewModels;
 using CommonObjects;
 using MainObjects;
-using System.Collections.Generic;
 
 namespace Battleship
 {
