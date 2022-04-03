@@ -90,5 +90,15 @@ namespace MainObjects
             }
             return PointStatus.Hit;
         }
+
+        public void StartsGame()
+        {
+            Console.WriteLine("Gracz {0} rozpoczyna gre", this.NickName);
+        }
+
+        public void Turn()
+        {
+            Console.WriteLine("Ruch gracza {0}", this.NickName);
+        }
     }
 }

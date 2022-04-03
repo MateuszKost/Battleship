@@ -4,7 +4,7 @@ using ViewModels;
 
 namespace Battleship
 {
-    public class SimulationAlgorithm
+    public class Simulation
     {
         private readonly Random _random = new Random();
         private readonly PlayerPointsList _firstPlayerPointsToShoot;
@@ -18,7 +18,7 @@ namespace Battleship
         private readonly ICollection<ShootViewModel> _shootForApi;
         private Point _lastPoint = Point.CreatePoint(int.MinValue, char.MinValue);
 
-        public SimulationAlgorithm()
+        public Simulation()
         {
             _firstPlayerPointsToShoot = new PlayerPointsList();
             _firstPlayerLastHitPoints = new PlayerPointsList();
@@ -27,13 +27,13 @@ namespace Battleship
             _firstPlayerNextProbablyPoints = new PlayerPointsDictionary();
             _firstPlayerDeletedPoints = new PlayerPointsDictionary();
             _secondPlayerNextProbablyPoints = new PlayerPointsDictionary();
-            _secondPlayerDeletedPoints= new PlayerPointsDictionary();
+            _secondPlayerDeletedPoints = new PlayerPointsDictionary();
             _shootForApi = new List<ShootViewModel>();
         }
 
         public ICollection<ShootViewModel> Start(Player playerOne, Player playerTwo)
         {
-            if(playerOne == null || playerTwo == null)
+            if (playerOne == null || playerTwo == null)
             {
                 throw new ArgumentNullException(nameof(Player));
             }
@@ -45,12 +45,12 @@ namespace Battleship
             if (_random.Next(CommonVariables.Players.Count()) == CommonVariables.Zero)
             {
                 playerTurn = CommonVariables.SecondPlayer;
-                Console.WriteLine(CommonVariables.FirstPlayerStartsTheGame);
+                playerOne.StartsGame();
             }
             else
             {
                 playerTurn = CommonVariables.FirstPlayer;
-                Console.WriteLine(CommonVariables.SecondPlayerStartsTheGame);
+                playerTwo.StartsGame();
             }
 
             pointStatus = ShootAndCheckIfHit(playerOne, playerTwo, playerTurn);
@@ -61,9 +61,13 @@ namespace Battleship
                 {
                     playerTurn = !playerTurn;
                     if (playerTurn)
-                        Console.WriteLine(CommonVariables.FirstPlyaerTurn);
+                    {
+                        playerOne.Turn();
+                    }
                     else
-                        Console.WriteLine(CommonVariables.SecondPlayerTurn);
+                    {
+                        playerTwo.Turn();
+                    }
                 }
                 pointStatus = ShootAndCheckIfHit(playerOne, playerTwo, playerTurn);
             }

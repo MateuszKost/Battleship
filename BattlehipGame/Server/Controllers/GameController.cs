@@ -20,7 +20,7 @@ namespace BattlehipGame.Server.Controllers
         [HttpGet("GetPlayers")]
         public PlayerViewModel[] GetPlayers()
         {
-            CreationAlgorithm creationAlgorithm = new CreationAlgorithm();
+            Creation creationAlgorithm = new Creation();
             _firstPlayer =  creationAlgorithm.CreatePlayer("First player");
             _secondPlayer =  creationAlgorithm.CreatePlayer("Second player");
 
@@ -35,8 +35,18 @@ namespace BattlehipGame.Server.Controllers
         {
             _firstPlayer = _cache.Get<Player>("firstPlayer");
             _secondPlayer = _cache.Get<Player>("secondPlayer");
-            //Check later ship creating, some points of ship sometimes are not in line
-            SimulationAlgorithm simulation = new SimulationAlgorithm();
+
+            Creation creationAlgorithm = new Creation();
+            if (_firstPlayer == null)
+            {
+                _firstPlayer = creationAlgorithm.CreatePlayer("First player");
+            }
+
+            if (_secondPlayer == null)
+            {
+                _secondPlayer = creationAlgorithm.CreatePlayer("Second player");
+            }
+            Simulation simulation = new Simulation();
             return simulation.Start(_firstPlayer, _secondPlayer);
         }
     }

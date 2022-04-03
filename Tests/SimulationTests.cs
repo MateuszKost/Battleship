@@ -13,8 +13,8 @@ namespace Tests
         public void StartingSimulation_WithTwoNonNullablePlayers_RightShootViewModelListData()
         {
             #region Arrange
-            CreationAlgorithm creationAlgorithm = new CreationAlgorithm();
-            SimulationAlgorithm simulationAlgorithm = new SimulationAlgorithm();
+            Creation creationAlgorithm = new Creation();
+            Simulation simulationAlgorithm = new Simulation();
             Player player1 = creationAlgorithm.CreatePlayer("Test player1");
             Player player2 = creationAlgorithm.CreatePlayer("Test player2");
             #endregion
@@ -30,8 +30,8 @@ namespace Tests
         public void StartingSimulation_WithNullablePlayer_ArgumentNullException()
         {
             #region Arrange
-            CreationAlgorithm creationAlgorithm = new CreationAlgorithm();
-            SimulationAlgorithm simulationAlgorithm = new SimulationAlgorithm();
+            Creation creationAlgorithm = new Creation();
+            Simulation simulationAlgorithm = new Simulation();
             Player player1 = creationAlgorithm.CreatePlayer("Test player1");
             Player player2 = null;
             #endregion
@@ -44,8 +44,8 @@ namespace Tests
         public void StartingSimulation_WithNullablePlayers_ArgumentNullException()
         {
             #region Arrange
-            CreationAlgorithm creationAlgorithm = new CreationAlgorithm();
-            SimulationAlgorithm simulationAlgorithm = new SimulationAlgorithm();
+            Creation creationAlgorithm = new Creation();
+            Simulation simulationAlgorithm = new Simulation();
             Player player1 = null;
             Player player2 = null;
             #endregion

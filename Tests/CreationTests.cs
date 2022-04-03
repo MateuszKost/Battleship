@@ -11,7 +11,7 @@ namespace Tests
         public void CreatingPlayer_AllRightData()
         {
             #region Arrange
-            CreationAlgorithm creationAlgorithm = new CreationAlgorithm();
+            Creation creationAlgorithm = new Creation();
             Player player = creationAlgorithm.CreatePlayer("Test player");
             #endregion
             #region Assert
@@ -26,7 +26,7 @@ namespace Tests
         public void CreatingPlayer_WithNullName_RightDataWithEmptyNickName()
         {
             #region Arrange
-            CreationAlgorithm creationAlgorithm = new CreationAlgorithm();
+            Creation creationAlgorithm = new Creation();
             Player player = creationAlgorithm.CreatePlayer(null);
             #endregion
             #region Assert
